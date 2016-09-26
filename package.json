@@ -1,0 +1,32 @@
+{
+  "name": "dojo-cli-build-webpack",
+  "version": "2.0.0-pre",
+  "description": "build a dojo 2 application",
+  "private": true,
+  "homepage": "http://dojotoolkit.org",
+  "bugs": {
+    "url": "https://github.com/dojo/cli-build/issues"
+  },
+  "license": "BSD-3-Clause",
+  "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dojo/cli-build.git"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "codecov.io": "0.1.6",
+    "dojo-loader": ">=2.0.0-beta.7",
+    "dts-generator": "~1.7.0",
+    "glob": "^7.0.3",
+    "grunt": "~1.0.1",
+    "grunt-dojo2": "2.0.0-beta.16",
+    "intern": "^3.2.3",
+    "istanbul": "^0.4.3",
+    "remap-istanbul": "^0.6.4",
+    "tslint": "next",
+    "typescript": "2.0.2"
+  }
+}
