@@ -34,7 +34,6 @@
     "yargs": "^5.0.0"
   },
   "dependencies": {
-    "@types/es6-promise": "0.0.32",
     "copy-webpack-plugin": "^3.0.1",
     "html-webpack-plugin": "^2.22.0",
     "ts-loader": "^0.8.2",
