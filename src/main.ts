@@ -1,6 +1,5 @@
 import { Command, Helper } from 'dojo-cli/interfaces';
 import { Argv } from 'yargs';
-import { join } from 'path';
 const webpack: any = require('webpack');
 const WebpackDevServer: any = require('webpack-dev-server');
 const config: any = require('./webpack.config');
@@ -20,7 +19,7 @@ interface WebpackOptions {
 
 function watch(config: any, options: WebpackOptions, args: BuildArgs): Promise<any> {
 	config.devtool = 'eval-source-map';
-	config.entry.unshift(join(__dirname, 'node_modules', 'webpack-dev-server/client?'));
+	config.entry.unshift('webpack-dev-server/client?');
 
 	const compiler = webpack(config);
 	const server = new WebpackDevServer(compiler, options);

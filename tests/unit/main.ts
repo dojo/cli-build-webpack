@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { beforeEach, afterEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import MockModule from '../support/MockModule';
@@ -72,7 +71,7 @@ describe('main', () => {
 			assert.equal(mockWebpackConfig.devtool, 'eval-source-map');
 			assert.deepEqual(
 				mockWebpackConfig.entry,
-				[join(require.toUrl('src'), 'node_modules', 'webpack-dev-server/client?')]
+				['webpack-dev-server/client?']
 			);
 		});
 	});
