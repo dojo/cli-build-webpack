@@ -19,7 +19,9 @@ interface WebpackOptions {
 
 function watch(config: any, options: WebpackOptions, args: BuildArgs): Promise<any> {
 	config.devtool = 'eval-source-map';
-	config.entry.unshift('webpack-dev-server/client?');
+	Object.keys(config.entry).forEach((key) => {
+		config.entry[key].unshift('webpack-dev-server/client?');
+	});
 
 	const compiler = webpack(config);
 	const server = new WebpackDevServer(compiler, options);

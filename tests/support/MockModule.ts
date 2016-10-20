@@ -46,6 +46,8 @@ export default class MockModule {
 				if (typeof dependency[prop] === 'function') {
 					mock[prop] = function () {};
 					this.sandbox.stub(mock, prop);
+				} else {
+					mock[prop] = dependency[prop];
 				}
 			}
 

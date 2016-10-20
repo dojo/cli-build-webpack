@@ -6,7 +6,12 @@ const path = require('path');
 const basePath = process.cwd();
 
 module.exports = {
-	entry: [ path.join(basePath, 'src/main.ts') ],
+	entry: {
+		'src/main': [
+			path.join(basePath, 'src/main.styl'),
+			path.join(basePath, 'src/main.ts')
+		]
+	},
 	devtool: 'source-map',
 	resolve: {
 		root: [ basePath ],
@@ -24,7 +29,10 @@ module.exports = {
 		exprContextRegExp: /$^/,
 		exprContextCritical: false,
 		loaders: [
-			{ test: /src\/.*\.ts?$/, loader: 'ts-loader' }
+			{ test: /src\/.*\.ts?$/, loader: 'ts-loader' },
+			{ test: /\.html$/, loader: "html" },
+			{ test: /\.(jpe|jpg|woff|woff2|eot|ttf|svg)(\?.*$|$)/, loader: 'file' },
+			{ test: /\.styl$/, loader: 'style-loader!css-loader!stylus-loader' }
 		]
 	},
 	plugins: [
@@ -36,11 +44,12 @@ module.exports = {
 		new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }}),
 		new HtmlWebpackPlugin ({
 			inject: true,
+			chunks: [ 'src/main' ],
 			template: 'src/index.html'
 		})
 	],
 	output: {
 		path: path.resolve('./dist'),
-		filename: 'main.js'
+		filename: '[name].js'
 	}
 };

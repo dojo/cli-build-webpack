@@ -18,7 +18,6 @@ describe('main', () => {
 		mockModule.dependencies(['./webpack.config', 'webpack', 'webpack-dev-server']);
 		mockWebpack = mockModule.getMock('webpack');
 		mockWebpackConfig = mockModule.getMock('./webpack.config');
-		mockWebpackConfig.entry = [];
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 		sandbox.stub(console, 'log');
 	});
@@ -69,10 +68,7 @@ describe('main', () => {
 			assert.isTrue(mockWebpackDevServer.listen.calledOnce);
 			assert.isTrue((<sinon.SinonStub> console.log).firstCall.calledWith('Starting server on http://localhost:9999'));
 			assert.equal(mockWebpackConfig.devtool, 'eval-source-map');
-			assert.deepEqual(
-				mockWebpackConfig.entry,
-				['webpack-dev-server/client?']
-			);
+			assert.equal(mockWebpackConfig.entry['src/main'][0], 'webpack-dev-server/client?');
 		});
 	});
 
