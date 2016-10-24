@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const RequirePlugin = require('umd-compat-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const path = require('path');
 const basePath = process.cwd();
 
@@ -38,10 +39,11 @@ module.exports = {
 			{ test: /src\/.*\.ts?$/, loader: 'ts-loader' },
 			{ test: /\.html$/, loader: "html" },
 			{ test: /\.(jpe|jpg|woff|woff2|eot|ttf|svg)(\?.*$|$)/, loader: 'file' },
-			{ test: /\.styl$/, loader: 'style-loader!css-loader!stylus-loader' }
+			{ test: /\.styl$/, loader: ExtractTextPlugin.extract(['css-loader?sourceMap', 'stylus-loader']) }
 		]
 	},
 	plugins: [
+		new ExtractTextPlugin('main.css'),
 		new CopyWebpackPlugin([
 			{ context: 'src', from: '**/*', ignore: '*.ts' },
 		]),
