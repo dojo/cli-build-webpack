@@ -39,6 +39,7 @@
     "file-loader": "^0.9.0",
     "html-loader": "^0.4.4",
     "html-webpack-plugin": "^2.22.0",
+    "source-map-loader": "zerkalica/source-map-loader#6c8872f",
     "style-loader": "^0.13.1",
     "stylus": "^0.54.5",
     "stylus-loader": "^2.3.1",

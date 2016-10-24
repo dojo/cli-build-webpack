@@ -28,6 +28,12 @@ module.exports = {
 		unknownContextCritical: false,
 		exprContextRegExp: /$^/,
 		exprContextCritical: false,
+		preLoaders: [
+			{
+				test: /dojo-.*\.js$/,
+				loader: 'source-map-loader'
+			}
+		],
 		loaders: [
 			{ test: /src\/.*\.ts?$/, loader: 'ts-loader' },
 			{ test: /\.html$/, loader: "html" },
