@@ -44,7 +44,7 @@
     "style-loader": "^0.13.1",
     "stylus": "^0.54.5",
     "stylus-loader": "^2.3.1",
-    "ts-loader": "^0.8.2",
+    "ts-loader": "^1.0.0",
     "umd-compat-webpack-plugin": "1.0.4",
     "webpack": "^1.13.2",
     "webpack-dev-server": "^1.16.1"
