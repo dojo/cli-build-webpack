@@ -38,7 +38,7 @@ module.exports = {
 		loaders: [
 			{ test: /src[\\\/].*\.ts?$/, loader: 'ts-loader' },
 			{ test: /\.html$/, loader: "html" },
-			{ test: /\.(jpe|jpg|woff|woff2|eot|ttf|svg)(\?.*$|$)/, loader: 'file' },
+			{ test: /\.(jpe|jpg|png|woff|woff2|eot|ttf|svg)(\?.*$|$)/, loader: 'file?name=[path][name].[hash:6].[ext]' },
 			{ test: /\.styl$/, loader: ExtractTextPlugin.extract(['css-loader?sourceMap', 'stylus-loader']) }
 		]
 	},
