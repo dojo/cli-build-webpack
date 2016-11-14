@@ -1,5 +1,4 @@
 const webpack = require('webpack');
-const RequirePlugin = require('umd-compat-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -25,10 +24,6 @@ module.exports = {
 		root: [ path.join(__dirname, 'node_modules') ]
 	},
 	module: {
-		unknownContextRegExp: /$^/,
-		unknownContextCritical: false,
-		exprContextRegExp: /$^/,
-		exprContextCritical: false,
 		preLoaders: [
 			{
 				test: /dojo-.*\.js$/,
@@ -36,7 +31,8 @@ module.exports = {
 			}
 		],
 		loaders: [
-			{ test: /src[\\\/].*\.ts?$/, loader: 'ts-loader' },
+			{ test: /src[\\\/].*\.ts?$/, loader: 'umd-compat-loader!ts-loader' },
+			{ test: /\.js?$/, loader: 'umd-compat-loader' },
 			{ test: /\.html$/, loader: 'html' },
 			{ test: /\.(jpe|jpg|png|woff|woff2|eot|ttf|svg)(\?.*$|$)/, loader: 'file?name=[path][name].[hash:6].[ext]' },
 			{ test: /\.styl$/, loader: ExtractTextPlugin.extract(['css-loader?sourceMap', 'stylus-loader']) },
@@ -44,11 +40,11 @@ module.exports = {
 		]
 	},
 	plugins: [
+		new webpack.ContextReplacementPlugin(/dojo-app\/lib/, { test: () => false }),
 		new ExtractTextPlugin('main.css'),
 		new CopyWebpackPlugin([
 			{ context: 'src', from: '**/*', ignore: '*.ts' },
 		]),
-		new RequirePlugin(),
 		new webpack.optimize.DedupePlugin(),
 		new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }}),
 		new HtmlWebpackPlugin ({
