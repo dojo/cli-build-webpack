@@ -40,7 +40,7 @@ module.exports = {
 		]
 	},
 	plugins: [
-		new webpack.ContextReplacementPlugin(/dojo-app\/lib/, { test: () => false }),
+		new webpack.ContextReplacementPlugin(/dojo-app[\\\/]lib/, { test: () => false }),
 		new ExtractTextPlugin('main.css'),
 		new CopyWebpackPlugin([
 			{ context: 'src', from: '**/*', ignore: '*.ts' },
