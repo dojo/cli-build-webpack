@@ -17,7 +17,16 @@ describe('main', () => {
 		mockModule = new MockModule('../../src/main');
 		mockModule.dependencies(['./webpack.config', 'webpack', 'webpack-dev-server']);
 		mockWebpack = mockModule.getMock('webpack');
-		mockWebpackConfig = mockModule.getMock('./webpack.config');
+		const mockWebpackConfigModule = mockModule.getMock('./webpack.config');
+		mockWebpackConfig = {
+			entry: {
+				'src/main': [
+					'src/main.styl',
+					'src/main.ts'
+				]
+			}
+		};
+		mockWebpackConfigModule.ctor.returns(mockWebpackConfig);
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 		sandbox.stub(console, 'log');
 	});

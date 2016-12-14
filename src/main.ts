@@ -78,10 +78,10 @@ const command: Command = {
 		};
 
 		if (args.watch) {
-			return watch(config, options, args);
+			return watch(config({ watch: true }), options, args);
 		}
 		else {
-			return compile(config, options);
+			return compile(config(), options);
 		}
 	}
 };
