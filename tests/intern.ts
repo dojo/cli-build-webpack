@@ -39,9 +39,7 @@ export const loaderOptions = {
 		{ name: 'dojo', location: 'node_modules/intern/node_modules/dojo' },
 		{ name: 'cldr-data', location: 'node_modules/cldr-data' },
 		{ name: 'cldrjs', location: 'node_modules/cldrjs' },
-		{ name: 'dojo-has', location: 'node_modules/dojo-has' },
-		{ name: 'dojo-i18n', location: 'node_modules/dojo-i18n' },
-		{ name: 'dojo-shim', location: 'node_modules/dojo-shim' },
+		{ name: '@dojo', location: 'node_modules/@dojo' },
 		{ name: 'globalize', location: 'node_modules/globalize', main: 'dist/globalize' }
 	],
 	map: {

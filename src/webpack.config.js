@@ -40,6 +40,14 @@ module.exports = function (args) {
 		}));
 	}
 
+	if (args.locale) {
+		plugins.push(new I18nPlugin({
+			defaultLocale: args.locale,
+			supportedLocales: args.supportedLocales,
+			messageBundles: args.messagesBundles
+		}));
+	}
+
     const webpackConfig = {
         externals: [
             function (context, request, callback) {
@@ -90,14 +98,6 @@ module.exports = function (args) {
             ]
         }
     };
-
-	if (args.locale) {
-		plugins.push(new I18nPlugin({
-			defaultLocale: args.locale,
-			supportedLocales: args.supportedLocales,
-			messageBundles: args.messagesBundles
-		}));
-	}
 
     if (args.withTests) {
         plugins.push(

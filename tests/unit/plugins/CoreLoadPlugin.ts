@@ -38,15 +38,15 @@ describe('core-load', () => {
 		assert.strictEqual(compilation.plugins['optimize-module-ids'].length, 1);
 	});
 
-	it('should replace `dojo-core/load` with the custom load module', () => {
+	it('should replace `@dojo/core/load` with the custom load module', () => {
 		const compiler = new Compiler();
 		const plugin = new LoadPlugin();
 
 		plugin.apply(compiler);
 		const replacementPlugin = compiler.applied[0];
 		assert.instanceOf(replacementPlugin, NormalModuleReplacementPlugin);
-		assert.strictEqual(replacementPlugin.resourceRegExp.toString(), '/dojo-core\\/load\\.js/');
-		assert.strictEqual(replacementPlugin.newResource, resolveMid('dojo-core/load/webpack'));
+		assert.strictEqual(replacementPlugin.resourceRegExp.toString(), '/@dojo\\/core\\/load\\.js/');
+		assert.strictEqual(replacementPlugin.newResource, resolveMid('@dojo/core/load/webpack'));
 	});
 
 	it('should inject a custom require into the issuer source', () => {
@@ -70,8 +70,8 @@ describe('core-load', () => {
 		const compilation = new Compilation();
 		const compiler = new Compiler();
 		const plugin = new LoadPlugin();
-		const url = '/path/to/dojo-core/load.js';
-		const load = new NormalModule(url, url, 'dojo-core/load', [], url, compiler.parser);
+		const url = '/path/to/@dojo/core/load.js';
+		const load = new NormalModule(url, url, '@dojo/core/load', [], url, compiler.parser);
 
 		load.id = 42;
 		plugin.apply(compiler);
@@ -81,7 +81,7 @@ describe('core-load', () => {
 		const source = compilation.moduleTemplate.mockApply('module', '', load)[0];
 		assert.instanceOf(source, ConcatSource, 'A new `ConcatSource` is created.');
 
-		const idMap = { 'dojo-core/load': { id: 42, lazy: false } };
+		const idMap = { '@dojo/core/load': { id: 42, lazy: false } };
 		assert.strictEqual(source.source(), `var __modules__ = ${JSON.stringify(idMap)};\n`);
 	});
 
@@ -103,7 +103,7 @@ describe('core-load', () => {
 		const compilation = new Compilation();
 		const compiler = new Compiler();
 		const plugin = new LoadPlugin();
-		const load = createModule('/path/to', 'dojo-core/load', 42, compiler);
+		const load = createModule('/path/to', '@dojo/core/load', 42, compiler);
 		const module = createModule('', '', 0, compiler);
 
 		plugin.apply(compiler);
@@ -111,7 +111,7 @@ describe('core-load', () => {
 		compilation.mockApply('optimize-module-ids', [ module, load ]);
 
 		const source = compilation.moduleTemplate.mockApply('module', '', load)[0];
-		const idMap = { 'dojo-core/load': { id: 42, lazy: false } };
+		const idMap = { '@dojo/core/load': { id: 42, lazy: false } };
 		assert.strictEqual(source.source(), `var __modules__ = ${JSON.stringify(idMap)};\n`,
 			'Module not added to ID map.');
 	});
@@ -120,7 +120,7 @@ describe('core-load', () => {
 		const compilation = new Compilation();
 		const compiler = new Compiler();
 		const plugin = new LoadPlugin();
-		const load = createModule('/path/to', 'dojo-core/load', 42, compiler);
+		const load = createModule('/path/to', '@dojo/core/load', 42, compiler);
 		const module = createModule('/path/to', 'module/id', 8675309, compiler);
 
 		plugin.apply(compiler);
@@ -130,7 +130,7 @@ describe('core-load', () => {
 		const source = compilation.moduleTemplate.mockApply('module', '', load)[0];
 		const idMap = {
 			'module/id': { id: 8675309, lazy: false },
-			'dojo-core/load': { id: 42, lazy: false }
+			'@dojo/core/load': { id: 42, lazy: false }
 		};
 		assert.strictEqual(source.source(), `var __modules__ = ${JSON.stringify(idMap)};\n`,
 			'Module added to ID map.');
@@ -142,7 +142,7 @@ describe('core-load', () => {
 		const plugin = new LoadPlugin();
 		const issuer = createModule('/path/to', 'parent', 0, compiler);
 		const module = createModule('/path/to', './module', 1, compiler);
-		const load = createModule('/path/to', 'dojo-core/load', 42, compiler);
+		const load = createModule('/path/to', '@dojo/core/load', 42, compiler);
 
 		plugin.apply(compiler);
 		compiler.parser.state = { current: issuer };
@@ -153,7 +153,7 @@ describe('core-load', () => {
 		const source = compilation.moduleTemplate.mockApply('module', '', load)[0];
 		const idMap = {
 			'/path/to/module': { id: 1, lazy: false },
-			'dojo-core/load': { id: 42, lazy: false }
+			'@dojo/core/load': { id: 42, lazy: false }
 		};
 		assert.strictEqual(source.source(), `var __modules__ = ${JSON.stringify(idMap)};\n`,
 			'Module added to ID map.');
@@ -165,7 +165,7 @@ describe('core-load', () => {
 		const plugin = new LoadPlugin();
 		const issuer = createModule('/path/to', 'parent', 0, compiler);
 		const module = createModule('/different/path/to', './module', 1, compiler);
-		const load = createModule('/path/to', 'dojo-core/load', 42, compiler);
+		const load = createModule('/path/to', '@dojo/core/load', 42, compiler);
 
 		plugin.apply(compiler);
 		compiler.parser.state = { current: issuer };
@@ -174,7 +174,7 @@ describe('core-load', () => {
 		compilation.mockApply('optimize-module-ids', [ module, load ]);
 
 		const source = compilation.moduleTemplate.mockApply('module', '', load)[0];
-		const idMap = { 'dojo-core/load': { id: 42, lazy: false } };
+		const idMap = { '@dojo/core/load': { id: 42, lazy: false } };
 		assert.strictEqual(source.source(), `var __modules__ = ${JSON.stringify(idMap)};\n`,
 			'Module not added to ID map.');
 	});
@@ -183,7 +183,7 @@ describe('core-load', () => {
 		const compilation = new Compilation();
 		const compiler = new Compiler();
 		const plugin = new LoadPlugin();
-		const load = createModule('/path/to', 'dojo-core/load', 42, compiler);
+		const load = createModule('/path/to', '@dojo/core/load', 42, compiler);
 		const module = createModule('/path/to', 'bundle!module', 1, compiler);
 
 		plugin.apply(compiler);
@@ -193,7 +193,7 @@ describe('core-load', () => {
 		const source = compilation.moduleTemplate.mockApply('module', '', load)[0];
 		const idMap = {
 			'module': { id: 1, lazy: true },
-			'dojo-core/load': { id: 42, lazy: false }
+			'@dojo/core/load': { id: 42, lazy: false }
 		};
 		assert.strictEqual(source.source(), `var __modules__ = ${JSON.stringify(idMap)};\n`,
 			'Module added to ID map.');

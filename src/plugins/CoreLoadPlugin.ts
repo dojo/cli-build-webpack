@@ -52,13 +52,13 @@ function stripPath(basePath: string, path: string): string {
 }
 
 /**
- * A webpack plugin that forces webpack to ignore `require` passed as a value, and replaces `dojo-core/load` with a
+ * A webpack plugin that forces webpack to ignore `require` passed as a value, and replaces `@dojo/core/load` with a
  * custom function that maps string module IDs to webpack's numerical module IDs.
  */
 export default class DojoLoadPlugin {
 	/**
 	 * Set up event listeners on the compiler and compilation. Register any module that uses a contextual require,
-	 * replace use of `dojo-core/load` with a custom load module, passing it a map of all dynamically-required
+	 * replace use of `@dojo/core/load` with a custom load module, passing it a map of all dynamically-required
 	 * module IDs.
 	 *
 	 * @param compiler
@@ -70,7 +70,7 @@ export default class DojoLoadPlugin {
 		const bundleLoader = /bundle.*\!/;
 		const issuers: string[] = [];
 
-		compiler.apply(new NormalModuleReplacementPlugin(/dojo-core\/load\.js/, resolveMid('dojo-core/load/webpack')));
+		compiler.apply(new NormalModuleReplacementPlugin(/@dojo\/core\/load\.js/, resolveMid('@dojo/core/load/webpack')));
 
 		compiler.parser.plugin('expression require', function (this: any): boolean {
 			issuers.push(getBasePath(this.state.current.userRequest));
@@ -86,7 +86,7 @@ export default class DojoLoadPlugin {
 					const require = `var require = function () { return '${path}'; };`;
 					return new ConcatSource(require, '\n', source);
 				}
-				const load = idMap['dojo-core/load'] || { id: null };
+				const load = idMap['@dojo/core/load'] || { id: null };
 				if (module.id === load.id) {
 					const moduleMap = `var __modules__ = ${JSON.stringify(idMap)};`;
 					return new ConcatSource(moduleMap, '\n', source);
@@ -99,7 +99,7 @@ export default class DojoLoadPlugin {
 					const { rawRequest, userRequest } = module;
 
 					if (rawRequest) {
-						if (!/^\W/.test(rawRequest)) {
+						if (rawRequest.indexOf('@dojo') === 0 || !/^\W/.test(rawRequest)) {
 							let modulePath = rawRequest;
 							let lazy = false;
 							if (bundleLoader.test(rawRequest)) {

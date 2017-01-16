@@ -12,7 +12,7 @@ describe('i18n', () => {
 		MockPlugin.reset();
 	});
 
-	it('should replace `dojo-i18n/cldr/load` with a custom load module.', () => {
+	it('should replace `@dojo/i18n/cldr/load` with a custom load module.', () => {
 		const compiler = new Compiler();
 		const plugin = new I18nPlugin({
 			defaultLocale: 'en',
@@ -23,7 +23,7 @@ describe('i18n', () => {
 		const replacementPlugin = compiler.applied[0];
 		assert.instanceOf(replacementPlugin, NormalModuleReplacementPlugin);
 		assert.strictEqual(replacementPlugin.resourceRegExp.toString(), '/\\/cldr\\/load$/');
-		assert.strictEqual(replacementPlugin.newResource, 'dojo-i18n/cldr/load/webpack');
+		assert.strictEqual(replacementPlugin.newResource, '@dojo/i18n/cldr/load/webpack');
 	});
 
 	describe('CLDR data', () => {
@@ -40,7 +40,7 @@ describe('i18n', () => {
 
 			return loadCldrData('en').then((data: CldrDataResponse) => {
 				const source = compilation.moduleTemplate.mockApply('module', '', {
-					userRequest: '/path/to/dojo-i18n/cldr/load/webpack.js'
+					userRequest: '/path/to/@dojo/i18n/cldr/load/webpack.js'
 				})[0];
 
 				const injected = `var __cldrData__ = ${JSON.stringify(data)}`;
@@ -62,7 +62,7 @@ describe('i18n', () => {
 
 			return loadCldrData([ 'en', 'es' ]).then((data: CldrDataResponse) => {
 				const source = compilation.moduleTemplate.mockApply('module', '', {
-					userRequest: '/path/to/dojo-i18n/cldr/load/webpack.js'
+					userRequest: '/path/to/@dojo/i18n/cldr/load/webpack.js'
 				})[0];
 
 				const injected = `var __cldrData__ = ${JSON.stringify(data)}`;

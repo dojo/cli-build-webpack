@@ -113,7 +113,7 @@ export default class DojoI18nPlugin {
 	}
 
 	/**
-	 * Add messages and CLDR data to the build, and replace `dojo-i18n/cldr/load` with a webpack-specific
+	 * Add messages and CLDR data to the build, and replace `@dojo/i18n/cldr/load` with a webpack-specific
 	 * load module.
 	 *
 	 * @param compiler
@@ -122,7 +122,7 @@ export default class DojoI18nPlugin {
 	apply(this: DojoI18nPlugin, compiler: any) {
 		const { defaultLocale, messageBundles, supportedLocales } = this;
 
-		compiler.apply(new NormalModuleReplacementPlugin(/\/cldr\/load$/, 'dojo-i18n/cldr/load/webpack'));
+		compiler.apply(new NormalModuleReplacementPlugin(/\/cldr\/load$/, '@dojo/i18n/cldr/load/webpack'));
 
 		if (supportedLocales && messageBundles && messageBundles.length) {
 			messageBundles.forEach((bundle: string) => {
