@@ -36,8 +36,28 @@ export const loaderOptions = {
 	packages: [
 		{ name: 'src', location: '_build/src' },
 		{ name: 'tests', location: '_build/tests' },
-		{ name: 'dojo', location: 'node_modules/intern/node_modules/dojo' }
-	]
+		{ name: 'dojo', location: 'node_modules/intern/node_modules/dojo' },
+		{ name: 'cldr-data', location: 'node_modules/cldr-data' },
+		{ name: 'cldrjs', location: 'node_modules/cldrjs' },
+		{ name: 'dojo-has', location: 'node_modules/dojo-has' },
+		{ name: 'dojo-i18n', location: 'node_modules/dojo-i18n' },
+		{ name: 'dojo-shim', location: 'node_modules/dojo-shim' },
+		{ name: 'globalize', location: 'node_modules/globalize', main: 'dist/globalize' }
+	],
+	map: {
+		globalize: {
+			'cldr': 'cldrjs/dist/cldr',
+			'cldr/event': 'cldrjs/dist/cldr/event',
+			'cldr/supplemental': 'cldrjs/dist/cldr/supplemental',
+			'cldr/unresolved': 'cldrjs/dist/cldr/unresolved'
+		},
+		'src/plugins/InjectModulesPlugin': {
+			'webpack/lib': 'tests/support/webpack'
+		},
+		'src/plugins/I18nPlugin': {
+			'src/plugins/InjectModulesPlugin': 'tests/support/MockPlugin'
+		}
+	}
 };
 
 // Non-functional test suite(s) to run in each browser
