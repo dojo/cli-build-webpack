@@ -68,7 +68,7 @@ export default class MockModule {
 	}
 
 	getModuleUnderTest(): any {
-		mockery.enable({ warnOnUnregistered: false });
+		mockery.enable({ warnOnUnregistered: false, useCleanCache: true });
 		const allowable = require.toUrl(this.moduleUnderTestPath) + '.js';
 		mockery.registerAllowable(allowable, true);
 		return load(this.moduleUnderTestPath);

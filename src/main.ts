@@ -66,6 +66,11 @@ const command: Command = {
 			type: 'number'
 		});
 
+		helper.yargs.option('t', {
+			alias: 'with-tests',
+			describe: 'build tests as well as sources'
+		});
+
 		return helper.yargs;
 	},
 	run(helper: Helper, args: BuildArgs) {
@@ -78,10 +83,10 @@ const command: Command = {
 		};
 
 		if (args.watch) {
-			return watch(config({ watch: true }), options, args);
+			return watch(config(args), options, args);
 		}
 		else {
-			return compile(config(), options);
+			return compile(config(args), options);
 		}
 	}
 };

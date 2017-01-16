@@ -47,6 +47,10 @@ describe('main', () => {
 			helper.yargs.option.secondCall.args,
 			[ 'p', { alias: 'port', describe: 'port to serve on when using --watch', type: 'number' }],
 		);
+		assert.deepEqual(
+			helper.yargs.option.thirdCall.args,
+			[ 't', { alias: 'with-tests', describe: 'build tests as well as sources' }],
+		);
 	});
 
 	it('should run compile and log results on success', () => {
