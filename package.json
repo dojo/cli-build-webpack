@@ -1,6 +1,6 @@
 {
   "name": "@dojo/cli-build-webpack",
-  "version": "2.0.0-alpha.8",
+  "version": "2.0.0-pre",
   "description": "build a dojo 2 application",
   "private": true,
   "homepage": "http://dojotoolkit.org",
