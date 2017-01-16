@@ -1,4 +1,4 @@
-import { Command, Helper } from 'dojo-cli/interfaces';
+import { Command, Helper } from '@dojo/cli/interfaces';
 import { Argv } from 'yargs';
 const webpack: any = require('webpack');
 const WebpackDevServer: any = require('webpack-dev-server');

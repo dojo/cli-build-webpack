@@ -1,5 +1,7 @@
 import * as mockery from 'mockery';
 import * as sinon from 'sinon';
+import { RootRequire } from '@dojo/interfaces/loader';
+declare const require: RootRequire;
 
 const dojoNodePlugin = 'intern/dojo/node';
 
