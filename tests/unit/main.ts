@@ -93,7 +93,7 @@ describe('main', () => {
 		return new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
 			assert.isTrue(mockWebpackDevServer.listen.calledOnce);
 			assert.isTrue((<sinon.SinonStub> console.log).firstCall.calledWith('Starting server on http://localhost:9999'));
-			assert.equal(mockWebpackConfig.devtool, 'eval-source-map');
+			assert.equal(mockWebpackConfig.devtool, 'inline-source-map');
 			assert.equal(mockWebpackConfig.entry['src/main'][0], 'webpack-dev-server/client?');
 		});
 	});
