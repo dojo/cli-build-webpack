@@ -93,10 +93,7 @@ module.exports = function (args) {
 		devtool: 'source-map',
 		resolve: {
 			root: [ basePath ],
-			extensions: ['', '.ts', '.tsx', '.js', '.css.json'],
-			alias: {
-				rxjs: '@reactivex/rxjs/dist/amd'
-			}
+			extensions: ['', '.ts', '.js', '.css.json']
 		},
 		resolveLoader: {
 			root: [ path.join(__dirname, 'node_modules') ]
