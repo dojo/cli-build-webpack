@@ -93,7 +93,7 @@ module.exports = function (args) {
 		devtool: 'source-map',
 		resolve: {
 			root: [ basePath ],
-			extensions: ['', '.ts', '.js', '.css.json']
+			extensions: ['', '.ts', '.js']
 		},
 		resolveLoader: {
 			root: [ path.join(__dirname, 'node_modules') ]
@@ -109,7 +109,7 @@ module.exports = function (args) {
 				{ test: /\.html$/, loader: 'html' },
 				{ test: /src[\\\/].*\.css?$/, loader: cssModuleLoader },
 				{ test: /\.css$/, exclude: /src[\\\/].*/, loader: cssLoader },
-				{ test: /\.css\.json$/, exclude: /src[\\\/].*/, loader: 'json-css-module-loader' }
+				{ test: /styles\/.*\.js$/, exclude: /src[\\\/].*/, loader: 'json-css-module-loader' }
 			]
 		}
 	};
