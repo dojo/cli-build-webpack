@@ -124,7 +124,7 @@ module.exports = function (args: any) {
 		},
 		module: {
 			preLoaders: [
-				{ test: /dojo-.*\.js$/, loader: 'source-map-loader' }
+				{ test: /@dojo\/.*\.js$/, loader: 'source-map-loader' }
 			],
 			loaders: [
 				{ test: /src[\\\/].*\.ts?$/, loader: 'umd-compat-loader!ts-loader' },
