@@ -10,6 +10,8 @@ const InjectModulesPlugin = require('./plugins/InjectModulesPlugin').default;
 const basePath = process.cwd();
 const postcssImport = require('postcss-import');
 const postcssCssNext = require('postcss-cssnext');
+import { existsSync } from 'fs';
+import * as NormalModuleReplacementPlugin from 'webpack/lib/NormalModuleReplacementPlugin';
 
 module.exports = function (args: any) {
 	args = args || {};
@@ -21,6 +23,8 @@ module.exports = function (args: any) {
 		`css-loader?modules&sourceMap&importLoaders=1&localIdentName=${localIdentName}`,
 		'postcss-loader?sourceMap'
 	]);
+
+	const replacedModules = new Set<string>();
 
 	function includeWhen(predicate: boolean, callback: any) {
 		return predicate ? callback(args) : [];
@@ -52,6 +56,17 @@ module.exports = function (args: any) {
 			})
 		},
 		plugins: [
+			new NormalModuleReplacementPlugin(/\.css$/, (result: any) => {
+				const requestFileName = path.resolve(result.context, result.request);
+				const jsFileName = requestFileName + '.js';
+
+				if (replacedModules.has(requestFileName)) {
+					replacedModules.delete(requestFileName);
+				} else if (existsSync(jsFileName)) {
+					replacedModules.add(requestFileName);
+					result.request = result.request.replace(/\.css$/, '.css.js');
+				}
+			}),
 			new webpack.ContextReplacementPlugin(/dojo-app[\\\/]lib/, { test: () => false }),
 			new ExtractTextPlugin('main.css'),
 			new CopyWebpackPlugin([
@@ -119,7 +134,7 @@ module.exports = function (args: any) {
 		devtool: 'source-map',
 		resolve: {
 			root: [ basePath ],
-			extensions: ['', '.ts', '.js', '.css.js']
+			extensions: ['', '.ts', '.js']
 		},
 		resolveLoader: {
 			root: [
@@ -138,7 +153,7 @@ module.exports = function (args: any) {
 				{ test: /\.html$/, loader: 'html' },
 				{ test: /\.css$/, exclude: /src[\\\/].*/, loader: cssLoader },
 				{ test: /src[\\\/].*\.css?$/, loader: cssModuleLoader },
-				{ test: /@dojo[\\\/].*styles\/.*\.js$/, exclude: /src[\\\/].*/, loader: 'json-css-module-loader' },
+				{ test: /\.css.js$/, exclude: /src[\\\/].*/, loaders: ['json-css-module-loader'] },
 				...includeWhen(args.withTests, (args: any) => {
 					return [
 						{ test: /tests[\\\/].*\.ts?$/, loader: 'umd-compat-loader!ts-loader' }
