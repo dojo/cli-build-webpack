@@ -26,8 +26,8 @@ module.exports = function (args: any) {
 
 	const replacedModules = new Set<string>();
 
-	function includeWhen(predicate: boolean, callback: any) {
-		return predicate ? callback(args) : [];
+	function includeWhen(predicate: boolean, callback: any, elseCallback: any = null) {
+		return predicate ? callback(args) : (elseCallback ? elseCallback(args) : []);
 	}
 
 	return {
@@ -39,22 +39,29 @@ module.exports = function (args: any) {
 				callback();
 			}
 		],
-		entry: {
-			'src/main': [
-				path.join(basePath, 'src/main.css'),
-				path.join(basePath, 'src/main.ts')
-			],
-			...includeWhen(args.withTests, (args: any) => {
-				return {
-					'../_build/tests/unit/all': [ path.join(basePath, 'tests/unit/all.ts') ],
-					'../_build/tests/functional/all': [ path.join(basePath, 'tests/functional/all.ts') ],
-					'../_build/src/main': [
-						path.join(basePath, 'src/main.css'),
-						path.join(basePath, 'src/main.ts')
-					]
-				};
-			})
-		},
+		entry: includeWhen(args.element, (args: any) => {
+			return {
+				[args.elementPrefix]: [ `${__dirname}/templates/custom-element.js` ],
+				'widget-core': '@dojo/widget-core'
+			};
+		}, (args: any) => {
+			return {
+				'src/main': [
+					path.join(basePath, 'src/main.css'),
+					path.join(basePath, 'src/main.ts')
+				],
+				...includeWhen(args.withTests, (args: any) => {
+					return {
+						'../_build/tests/unit/all': [ path.join(basePath, 'tests/unit/all.ts') ],
+						'../_build/tests/functional/all': [ path.join(basePath, 'tests/functional/all.ts') ],
+						'../_build/src/main': [
+							path.join(basePath, 'src/main.css'),
+							path.join(basePath, 'src/main.ts')
+						]
+					};
+				})
+			};
+		}),
 		plugins: [
 			new NormalModuleReplacementPlugin(/\.css$/, (result: any) => {
 				const requestFileName = path.resolve(result.context, result.request);
@@ -68,21 +75,42 @@ module.exports = function (args: any) {
 				}
 			}),
 			new webpack.ContextReplacementPlugin(/dojo-app[\\\/]lib/, { test: () => false }),
-			new ExtractTextPlugin('main.css'),
-			new CopyWebpackPlugin([
-				{ context: 'src', from: '**/*', ignore: '*.ts' }
-			]),
+			includeWhen(args.element, (args: any) => {
+				return new ExtractTextPlugin(`${args.elementPrefix}.css`);
+			}, (args: any) => {
+				return new ExtractTextPlugin('main.css');
+			}),
+			includeWhen(args.element, (args: any) => {
+				return new CopyWebpackPlugin([
+					{ context: 'src', from: '**/*', ignore: [ '*.ts', '*.css', '*.html' ] }
+				]);
+			}, (args: any) => {
+				return new CopyWebpackPlugin([
+					{ context: 'src', from: '**/*', ignore: '*.ts' }
+				]);
+			}),
 			new webpack.optimize.DedupePlugin(),
 			new InjectModulesPlugin({
 				resourcePattern: /dojo-core\/request(\.js)?$/,
 				moduleIds: [ './request/xhr' ]
 			}),
 			new CoreLoadPlugin(),
+			...includeWhen(args.element, (args: any) => {
+				return [ new webpack.optimize.CommonsChunkPlugin('widget-core', 'widget-core.js') ];
+			}),
 			new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }, exclude: /tests[/]/ }),
-			new HtmlWebpackPlugin ({
-				inject: true,
-				chunks: [ 'src/main' ],
-				template: 'src/index.html'
+			includeWhen(args.element, (args: any) => {
+				return new HtmlWebpackPlugin({
+					inject: false,
+					template: path.join(__dirname, 'templates/custom-element.html'),
+					filename: `${args.elementPrefix}.html`
+				});
+			}, (args: any) => {
+				return new HtmlWebpackPlugin({
+					inject: true,
+					chunks: [ 'src/main' ],
+					template: 'src/index.html'
+				});
 			}),
 			...includeWhen(args.locale, (args: any) => {
 				return [
@@ -128,12 +156,16 @@ module.exports = function (args: any) {
 		],
 		output: {
 			libraryTarget: 'umd',
-			path: path.resolve('./dist'),
+			path: includeWhen(args.element, (args: any) => {
+				return path.resolve(`./dist/${args.elementPrefix}`);
+			}, () => {
+				return path.resolve('./dist');
+			}),
 			filename: '[name].js'
 		},
 		devtool: 'source-map',
 		resolve: {
-			root: [ basePath ],
+			root: [ basePath, path.join(basePath, 'node_modules') ],
 			extensions: ['', '.ts', '.js']
 		},
 		resolveLoader: {
@@ -150,13 +182,23 @@ module.exports = function (args: any) {
 				{ test: /src[\\\/].*\.ts?$/, loader: 'umd-compat-loader!ts-loader' },
 				{ test: /\.js?$/, loader: 'umd-compat-loader' },
 				{ test: /globalize(\/|$)/, loader: 'imports-loader?define=>false' },
-				{ test: /\.html$/, loader: 'html' },
+				...includeWhen(!args.element, (args: any) => {
+					return [ { test: /\.html$/, loader: 'html' } ];
+				}),
 				{ test: /\.css$/, exclude: /src[\\\/].*/, loader: cssLoader },
 				{ test: /src[\\\/].*\.css?$/, loader: cssModuleLoader },
 				{ test: /\.css.js$/, exclude: /src[\\\/].*/, loaders: ['json-css-module-loader'] },
 				...includeWhen(args.withTests, (args: any) => {
 					return [
 						{ test: /tests[\\\/].*\.ts?$/, loader: 'umd-compat-loader!ts-loader' }
+					];
+				}),
+				...includeWhen(args.element, (args: any) => {
+					return [
+						{
+							test: /custom-element\.js/,
+							loader: `imports-loader?widgetFactory=${args.element}`
+						}
 					];
 				})
 			]

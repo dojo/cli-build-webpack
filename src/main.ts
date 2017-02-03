@@ -10,6 +10,8 @@ interface BuildArgs extends Argv {
 	supportedLocales: string | string[];
 	watch: boolean;
 	port: number;
+	element: string;
+	elementPrefix: string;
 }
 
 interface WebpackOptions {
@@ -35,6 +37,18 @@ function getConfigArgs(args: BuildArgs): Partial<BuildArgs> {
 
 	if (supportedLocales) {
 		options.supportedLocales = Array.isArray(supportedLocales) ? supportedLocales : [ supportedLocales ];
+	}
+
+	if (args.element && !args.elementPrefix) {
+		const factoryPattern = /create(.*?)Element.*?\.ts$/;
+		const matches = args.element.match(factoryPattern);
+
+		if (matches && matches[ 1 ]) {
+			options.elementPrefix = matches[ 1 ].replace(/[A-Z][a-z]/g, '-\$&').replace(/^-+/g, '').toLowerCase();
+		} else {
+			console.error(`"${args.element}" does not follow the pattern "createXYZElement". Use --elementPrefix to name element.`);
+			process.exit();
+		}
 	}
 
 	return options;
@@ -107,6 +121,16 @@ const command: Command = {
 		helper.yargs.option('messageBundles', {
 			describe: 'Any message bundles to include in the build',
 			type: 'array'
+		});
+
+		helper.yargs.option('element', {
+			describe: 'Path to a custom element descriptor factory',
+			type: 'string'
+		});
+
+		helper.yargs.option('elementPrefix', {
+			describe: 'Output file for custom element',
+			type: 'string'
 		});
 
 		return helper.yargs;
