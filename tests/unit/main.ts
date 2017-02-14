@@ -38,31 +38,39 @@ describe('main', () => {
 	});
 
 	it('should register supported arguments', () => {
-		const helper = { yargs: { option: sandbox.stub() } };
-		moduleUnderTest.register(helper);
+		const options = sandbox.stub();
+		moduleUnderTest.register(options);
 		assert.deepEqual(
-			helper.yargs.option.firstCall.args,
+			options.firstCall.args,
 			[ 'w', { alias: 'watch', describe: 'watch and serve' } ]
 		);
 		assert.deepEqual(
-			helper.yargs.option.secondCall.args,
+			options.secondCall.args,
 			[ 'p', { alias: 'port', describe: 'port to serve on when using --watch', type: 'number' }],
 		);
 		assert.deepEqual(
-			helper.yargs.option.thirdCall.args,
+			options.thirdCall.args,
 			[ 't', { alias: 'with-tests', describe: 'build tests as well as sources' }]
 		);
 		assert.deepEqual(
-			helper.yargs.option.args[3],
+			options.args[3],
 			[ 'locale', { describe: 'The default locale for the application', type: 'string' }],
 		);
 		assert.deepEqual(
-			helper.yargs.option.args[4],
+			options.args[4],
 			[ 'supportedLocales', { describe: 'Any additional locales supported by the application', type: 'array' }]
 		);
 		assert.deepEqual(
-			helper.yargs.option.args[5],
+			options.args[5],
 			[ 'messageBundles', { describe: 'Any message bundles to include in the build', type: 'array' }]
+		);
+		assert.deepEqual(
+			options.args[6],
+			[ 'element', { describe: 'Path to a custom element descriptor factory', type: 'string' }]
+		);
+		assert.deepEqual(
+			options.args[7],
+			[ 'elementPrefix', { describe: 'Output file for custom element', type: 'string' }]
 		);
 	});
 

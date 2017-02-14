@@ -17,7 +17,7 @@
     "test": "grunt test"
   },
   "devDependencies": {
-    "@dojo/cli": "2.0.0-alpha.8",
+    "@dojo/cli": "2.0.0-alpha.9",
     "@dojo/interfaces": "^2.0.0-alpha.11",
     "@dojo/loader": "2.0.0-beta.9",
     "@types/chai": "^3.4.34",
