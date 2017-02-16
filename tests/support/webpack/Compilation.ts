@@ -16,7 +16,7 @@ class Compilation extends Pluginable {
 		this.resolvers = [];
 		this.options = options || {
 			resolve: {
-				root: '/root/path'
+				modules: [ '/root/path' ]
 			}
 		};
 	}

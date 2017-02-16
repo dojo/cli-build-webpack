@@ -90,10 +90,10 @@ function setContext(plugin: InjectModulesPlugin, compiler: any) {
 	}
 
 	const resolve = compiler.options.resolve;
-	const root = resolve && resolve.root;
+	const modules = resolve && resolve.modules;
 
-	plugin.context = Array.isArray(root) ? root[0] :
-		(typeof root === 'string') ? root : basePath;
+	plugin.context = Array.isArray(modules) ? modules[0] :
+		(typeof modules === 'string') ? modules : basePath;
 }
 
 /**

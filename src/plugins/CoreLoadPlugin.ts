@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as ConcatSource from 'webpack-core/lib/ConcatSource';
+import * as ConcatSource from 'webpack-sources/lib/ConcatSource';
 import * as NormalModuleReplacementPlugin from 'webpack/lib/NormalModuleReplacementPlugin';
 import { getBasePath, resolveMid } from './util';
 
@@ -66,19 +66,20 @@ export default class DojoLoadPlugin {
 	 */
 	apply(compiler: any) {
 		const idMap = Object.create(null) as ModuleIdMap;
-		const basePath = compiler.options.resolve.root[0];
+		const basePath = compiler.options.resolve.modules[0];
 		const bundleLoader = /bundle.*\!/;
 		const issuers: string[] = [];
 
 		compiler.apply(new NormalModuleReplacementPlugin(/@dojo\/core\/load\.js/, resolveMid('@dojo/core/load/webpack')));
 
-		compiler.parser.plugin('expression require', function (this: any): boolean {
-			issuers.push(getBasePath(this.state.current.userRequest));
-			this.state.current.meta.isPotentialLoad = true;
-			return true;
-		});
-
-		compiler.plugin('compilation', (compilation: any) => {
+		compiler.plugin('compilation', (compilation: any, params: any) => {
+			params.normalModuleFactory.plugin('parser', function (parser: any) {
+				parser.plugin('expression require', function (this: any): boolean {
+					issuers.push(getBasePath(this.state.current.userRequest));
+					this.state.current.meta.isPotentialLoad = true;
+					return true;
+				});
+			});
 
 			compilation.moduleTemplate.plugin('module', (source: any, module: any) => {
 				if (module.meta && module.meta.isPotentialLoad) {

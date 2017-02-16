@@ -1,4 +1,4 @@
-declare module 'webpack-core/lib/ConcatSource' {
+declare module 'webpack-sources/lib/ConcatSource' {
 	let source: any;
 	export = source;
 }

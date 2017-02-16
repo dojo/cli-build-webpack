@@ -294,7 +294,7 @@ describe('inject-modules', () => {
 			});
 			compiler.options = {
 				resolve: {
-					root: [ '/first', '/second' ]
+					modules: [ '/first', '/second' ]
 				}
 			};
 			plugin.apply(compiler);

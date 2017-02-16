@@ -4,25 +4,42 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer-sunburst').BundleAnalyzerPlugin;
 const path = require('path');
-const CoreLoadPlugin = require('./plugins/CoreLoadPlugin').default;
-const I18nPlugin = require('./plugins/I18nPlugin').default;
-const InjectModulesPlugin = require('./plugins/InjectModulesPlugin').default;
 const basePath = process.cwd();
 const postcssImport = require('postcss-import');
 const postcssCssNext = require('postcss-cssnext');
 import { existsSync } from 'fs';
 import * as NormalModuleReplacementPlugin from 'webpack/lib/NormalModuleReplacementPlugin';
 
+import CoreLoadPlugin from './plugins/CoreLoadPlugin';
+import I18nPlugin from './plugins/I18nPlugin';
+import InjectModulesPlugin from './plugins/InjectModulesPlugin';
+
 module.exports = function (args: any) {
 	args = args || {};
 
-	const cssLoader = ExtractTextPlugin.extract([ 'css-loader?sourceMap' ]);
+	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap' });
 	const localIdentName = args.watch ? '[name]__[local]__[hash:base64:5]' : '[hash:base64:8]';
-	const cssModuleLoader = ExtractTextPlugin.extract([
-		'css-module-decorator-loader',
-		`css-loader?modules&sourceMap&importLoaders=1&localIdentName=${localIdentName}`,
-		'postcss-loader?sourceMap'
-	]);
+	const cssModuleLoader = ExtractTextPlugin.extract({
+		use: [
+			'css-module-decorator-loader',
+			`css-loader?modules&sourceMap&importLoaders=1&localIdentName=${localIdentName}`,
+			{
+				loader: 'postcss-loader?sourceMap',
+				options: {
+					plugins: [
+						postcssImport,
+						postcssCssNext({
+							features: {
+								autoprefixer: {
+									browsers: [ 'last 2 versions', 'ie >= 10' ]
+								}
+							}
+						})
+					]
+				}
+			}
+		]
+	});
 
 	const replacedModules = new Set<string>();
 
@@ -76,9 +93,9 @@ module.exports = function (args: any) {
 			}),
 			new webpack.ContextReplacementPlugin(/dojo-app[\\\/]lib/, { test: () => false }),
 			includeWhen(args.element, (args: any) => {
-				return new ExtractTextPlugin(`${args.elementPrefix}.css`);
+				return new ExtractTextPlugin({ filename: `${args.elementPrefix}.css` });
 			}, (args: any) => {
-				return new ExtractTextPlugin('main.css');
+				return new ExtractTextPlugin({ filename: 'main.css' });
 			}),
 			includeWhen(args.element, (args: any) => {
 				return new CopyWebpackPlugin([
@@ -89,7 +106,6 @@ module.exports = function (args: any) {
 					{ context: 'src', from: '**/*', ignore: '*.ts' }
 				]);
 			}),
-			new webpack.optimize.DedupePlugin(),
 			new InjectModulesPlugin({
 				resourcePattern: /dojo-core\/request(\.js)?$/,
 				moduleIds: [ './request/xhr' ]
@@ -98,7 +114,7 @@ module.exports = function (args: any) {
 			...includeWhen(args.element, (args: any) => {
 				return [ new webpack.optimize.CommonsChunkPlugin('widget-core', 'widget-core.js') ];
 			}),
-			new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }, exclude: /tests[/]/ }),
+			new webpack.optimize.UglifyJsPlugin({ sourceMap: true, compress: { warnings: false }, exclude: /tests[/]/ }),
 			includeWhen(args.element, (args: any) => {
 				return new HtmlWebpackPlugin({
 					inject: false,
@@ -144,16 +160,6 @@ module.exports = function (args: any) {
 				];
 			})
 		],
-		postcss: [
-			postcssImport,
-			postcssCssNext({
-				features: {
-					autoprefixer: {
-						browsers: [ 'last 2 versions', 'ie >= 10' ]
-					}
-				}
-			})
-		],
 		output: {
 			libraryTarget: 'umd',
 			path: includeWhen(args.element, (args: any) => {
@@ -165,33 +171,37 @@ module.exports = function (args: any) {
 		},
 		devtool: 'source-map',
 		resolve: {
-			root: [ basePath, path.join(basePath, 'node_modules') ],
-			extensions: ['', '.ts', '.js']
+			modules: [
+				basePath,
+				path.join(basePath, 'node_modules')
+			],
+			extensions: ['.ts', '.js']
 		},
 		resolveLoader: {
-			root: [
-				path.join(__dirname, 'node_modules'),
-				path.join(__dirname, 'loaders')
-			]
+			modules: [ path.join(__dirname, 'loaders'), 'node_modules' ]
 		},
 		module: {
-			preLoaders: [
-				{ test: /@dojo\/.*\.js$/, loader: 'source-map-loader' }
-			],
-			loaders: [
-				{ test: /src[\\\/].*\.ts?$/, loader: 'umd-compat-loader!ts-loader' },
+			rules: [
+				{ test: /@dojo\/.*\.js$/, enforce: 'pre', loader: 'source-map-loader', options: { includeModulePaths: true } },
+				{
+					test: /src[\\\/].*\.ts?$/,
+					use: [
+						'umd-compat-loader',
+						'ts-loader'
+					]
+				},
 				{ test: /\.js?$/, loader: 'umd-compat-loader' },
 				{ test: /globalize(\/|$)/, loader: 'imports-loader?define=>false' },
 				...includeWhen(!args.element, (args: any) => {
-					return [ { test: /\.html$/, loader: 'html' } ];
+					return [ { test: /\.html$/, loader: 'html-loader' } ];
 				}),
-				{ test: /.*\.(gif|png|jpe?g|svg)$/i, loader: 'file?hash=sha512&digest=hex&name=[hash:base64:8].[ext]' },
+				{ test: /.*\.(gif|png|jpe?g|svg)$/i, loader: 'file-loader?hash=sha512&digest=hex&name=[hash:base64:8].[ext]' },
 				{ test: /\.css$/, exclude: /src[\\\/].*/, loader: cssLoader },
 				{ test: /src[\\\/].*\.css?$/, loader: cssModuleLoader },
-				{ test: /\.css.js$/, exclude: /src[\\\/].*/, loaders: ['json-css-module-loader'] },
+				{ test: /\.css.js$/, exclude: /src[\\\/].*/, use: ['json-css-module-loader'] },
 				...includeWhen(args.withTests, (args: any) => {
 					return [
-						{ test: /tests[\\\/].*\.ts?$/, loader: 'umd-compat-loader!ts-loader' }
+						{ test: /tests[\\\/].*\.ts?$/, use: ['umd-compat-loader', 'ts-loader'] }
 					];
 				}),
 				...includeWhen(args.element, (args: any) => {

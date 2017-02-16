@@ -17,8 +17,8 @@ describe('main', () => {
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/main');
 		mockModule.dependencies(['./webpack.config', 'webpack', 'webpack-dev-server']);
-		mockWebpack = mockModule.getMock('webpack');
-		mockWebpackConfigModule = mockModule.getMock('./webpack.config');
+		mockWebpack = mockModule.getMock('webpack').ctor;
+		mockWebpackConfigModule = mockModule.getMock('./webpack.config').ctor;
 		mockWebpackConfig = {
 			entry: {
 				'src/main': [
@@ -27,7 +27,7 @@ describe('main', () => {
 				]
 			}
 		};
-		mockWebpackConfigModule.ctor.returns(mockWebpackConfig);
+		mockWebpackConfigModule.returns(mockWebpackConfig);
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 		sandbox.stub(console, 'log');
 	});
@@ -75,20 +75,22 @@ describe('main', () => {
 	});
 
 	it('should run compile and log results on success', () => {
-		mockWebpack.run = sandbox.stub().yields(false, 'some stats');
+		const run = sandbox.stub().yields(false, 'some stats');
+		mockWebpack.returns({ run });
 		return moduleUnderTest.run({}, {}).then(() => {
-			assert.isTrue(mockWebpack.run.calledOnce);
+			assert.isTrue(run.calledOnce);
 			assert.isTrue((<sinon.SinonStub> console.log).calledWith('some stats'));
 		});
 	});
 
 	it('should run compile and reject on failure', () => {
 		const compilerError = new Error('compiler error');
-		mockWebpack.run = sandbox.stub().yields(compilerError, null);
+		const run = sandbox.stub().yields(compilerError, null);
+		mockWebpack.returns({ run });
 		return moduleUnderTest.run({}, {}).then(
 			throwImmediately,
 			(e: Error) => {
-				assert.isTrue(mockWebpack.run.calledOnce);
+				assert.isTrue(run.calledOnce);
 				assert.equal(e, compilerError);
 			}
 		);
@@ -120,33 +122,37 @@ describe('main', () => {
 	});
 
 	describe('i18n options', () => {
+		beforeEach(() => {
+			mockWebpack.returns({
+				run: sandbox.stub().yields(null, 'stats and stuff')
+			});
+		});
+
 		it('should correctly set i18n options', () => {
-			moduleUnderTest.run({}, {
+			return moduleUnderTest.run({}, {
 				locale: 'en',
 				supportedLocales: [ 'fr' ],
 				messageBundles: [ 'nls/main' ]
-			});
-			return new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
-				assert.isTrue(mockWebpackConfigModule.ctor.calledWith({
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
 					locale: 'en',
 					supportedLocales: [ 'fr' ],
 					messageBundles: [ 'nls/main' ]
-				}), JSON.stringify(mockWebpack.ctor.args));
+				}), JSON.stringify(mockWebpack.args));
 			});
 		});
 
 		it('should allow string values for supported locales and message bundles', () => {
-			moduleUnderTest.run({}, {
+			return moduleUnderTest.run({}, {
 				locale: 'en',
 				supportedLocales: 'fr',
 				messageBundles: 'nls/main'
-			});
-			return new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
-				assert.isTrue(mockWebpackConfigModule.ctor.calledWith({
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
 					locale: 'en',
 					supportedLocales: [ 'fr' ],
 					messageBundles: [ 'nls/main' ]
-				}), JSON.stringify(mockWebpack.ctor.args));
+				}), JSON.stringify(mockWebpack.args));
 			});
 		});
 	});
