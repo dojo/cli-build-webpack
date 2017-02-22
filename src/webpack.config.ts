@@ -95,7 +95,7 @@ module.exports = function (args: any) {
 			includeWhen(args.element, (args: any) => {
 				return new ExtractTextPlugin({ filename: `${args.elementPrefix}.css` });
 			}, (args: any) => {
-				return new ExtractTextPlugin({ filename: 'main.css' });
+				return new ExtractTextPlugin({ filename: 'main.css', allChunks: true });
 			}),
 			includeWhen(args.element, (args: any) => {
 				return new CopyWebpackPlugin([
