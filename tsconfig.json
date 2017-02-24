@@ -1,5 +1,5 @@
 {
-	"version": "2.0.3",
+	"version": "2.2.0",
 	"compilerOptions": {
 		"declaration": false,
 		"module": "umd",
@@ -10,7 +10,8 @@
 		"removeComments": false,
 		"sourceMap": true,
 		"target": "es6",
-		"moduleResolution": "node"
+		"moduleResolution": "node",
+		"types": [ "intern" ]
 	},
 	"include": [
 		"./typings/index.d.ts",
