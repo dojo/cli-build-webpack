@@ -42,7 +42,7 @@ describe('css-module-dts-loader', () => {
 	const resourcePath = 'test/path';
 	const dateNow = new Date();
 	let instance: any;
-	const defaultScope = { async, resourcePath};
+	const defaultScope = { async, resourcePath };
 
 	function getInstance() {
 		return {

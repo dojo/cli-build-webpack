@@ -1,7 +1,7 @@
 import loadCldrData, { CldrDataResponse } from '@dojo/i18n/cldr/load';
 import { afterEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
-import * as NormalModuleReplacementPlugin from 'webpack/lib/NormalModuleReplacementPlugin';
+import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 import Compilation = require('../../support/webpack/Compilation');
 import Compiler = require('../../support/webpack/Compiler');
 import MockPlugin from '../../support/MockPlugin';

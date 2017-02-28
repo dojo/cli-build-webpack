@@ -1,6 +1,9 @@
 import * as path from 'path';
-import * as NormalModule from 'webpack/lib/NormalModule';
-import { Callback, RequestData, Resolver } from './interfaces';
+import NormalModule = require('webpack/lib/NormalModule');
+import NormalModuleFactory = require('webpack/lib/NormalModuleFactory');
+import Chunk = require('webpack/lib/Chunk');
+import Compiler = require('webpack/lib/Compiler');
+import Compilation = require('webpack/lib/Compilation');
 import { getBasePath } from './util';
 const basePath = path.join(process.cwd(), 'node_modules');
 
@@ -59,12 +62,12 @@ function isRelative(id: string): boolean {
  * @return
  * A promise to the resolved module paths data.
  */
-function resolveContextPath(id: string, absContext: string, relativeContext: string, resolver: Resolver): Promise<any> {
-	return new Promise((resolve, reject) => {
+function resolveContextPath(id: string, absContext: string, relativeContext: string, resolver: NormalModuleFactory.Resolver) {
+	return new Promise<NormalModuleFactory.AfterData>((resolve, reject) => {
 		resolver({
 			context: isRelative(id) ? relativeContext : absContext,
 			request: id
-		}, (error?: Error, result?: any) => {
+		}, (error, result) => {
 			if (error) {
 				return reject(error);
 			}
@@ -84,7 +87,7 @@ function resolveContextPath(id: string, absContext: string, relativeContext: str
  * @param compiler
  * The compiler instance.
  */
-function setContext(plugin: InjectModulesPlugin, compiler: any) {
+function setContext(plugin: InjectModulesPlugin, compiler: Compiler) {
 	if (plugin.context) {
 		return;
 	}
@@ -123,7 +126,7 @@ function validateModuleIds(moduleIds: ModuleIds) {
  */
 export default class InjectModulesPlugin {
 	protected _added: string[];
-	protected _modules: Map<string, any>;
+	protected _modules: Map<string, NormalModule>;
 
 	context?: string;
 	moduleIds: ModuleIds;
@@ -146,22 +149,22 @@ export default class InjectModulesPlugin {
 	 * @param compiler
 	 * The compiler instance.
 	 */
-	apply(this: InjectModulesPlugin, compiler: any) {
+	apply(compiler: Compiler) {
 		const { resourcePattern } = this;
 		const resources: string[] = [];
-		let compilation: any;
+		let compilation: Compilation | null;
 
 		setContext(this, compiler);
 
-		compiler.plugin('compilation', (currentCompilation: any) => {
+		compiler.plugin('compilation', currentCompilation => {
 			if (!compilation) {
 				compilation = currentCompilation;
-				compilation.plugin('optimize-chunks', (chunks: any[]) => {
-					this._modules.forEach((module: any) => {
-						chunks.forEach((chunk: any) => {
-							const requests = chunk.modules.map((module: any) => module.userRequest);
+				compilation.plugin('optimize-chunks', chunks => {
+					this._modules.forEach(module => {
+						chunks.forEach(chunk => {
+							const requests = chunk.modules.map((module: NormalModule) => module.userRequest);
 
-							if (requests.some((id: string) => resources.indexOf(id) > -1)) {
+							if (requests.some(id => resources.indexOf(id) > -1)) {
 								chunk.addModule(module);
 								module.addChunk(chunk);
 								this.injectModuleDependencies(module, chunk);
@@ -177,22 +180,22 @@ export default class InjectModulesPlugin {
 			compilation = null;
 		});
 
-		compiler.plugin('normal-module-factory', (factory: any) => {
+		compiler.plugin('normal-module-factory', factory => {
 			// Listening to the "resolver" event gives access to the resolver function that allows the injected module
 			// IDs to be mapped to not only their resources, but also to any loaders.
-			factory.plugin('resolver', (resolver: Resolver): Resolver => {
-				return (data: any, callback: Callback): any => {
-					resolver(data, (error?: Error, result?: any) => {
+			factory.plugin('resolver', resolver => {
+				return (data: NormalModuleFactory.BeforeData, callback: NormalModuleFactory.ResolverCallback): void => {
+					resolver(data, (error, result) => {
 						if (error) {
 							return callback(error);
 						}
 
-						const { resource } = result;
+						const { resource } = result as NormalModuleFactory.AfterData;
 						if (resourcePattern.test(resource) && resources.indexOf(resource) === -1) {
 							return this.resolve(resource, resolver)
-								.then((resolved: RequestData[]) => {
+								.then(resolved => {
 									resources.push(resource);
-									return this.createModules(resolved, compilation);
+									return this.createModules(resolved, <Compilation> compilation);
 								})
 								.then(() => {
 									callback(null, result);
@@ -221,13 +224,13 @@ export default class InjectModulesPlugin {
 	 * @return
 	 * A promise that resolves once all modules have been built.
 	 */
-	createModules(data: RequestData[], compilation: any): Promise<void[]> {
-		return Promise.all(data.map((item: any) => {
+	createModules(data: NormalModuleFactory.AfterData[], compilation: Compilation): Promise<void[]> {
+		return Promise.all(data.map(item => {
 			return new Promise<void>((resolve, reject) => {
 				const { request, userRequest, rawRequest, loaders, resource, parser } = item;
 				const module = new NormalModule(request, userRequest, rawRequest, loaders, resource, parser);
 				compilation.addModule(module);
-				compilation.buildModule(module, (error?: Error) => {
+				compilation.buildModule(module, false, null, null, (error?: Error) => {
 					if (error) {
 						return reject(error);
 					}
@@ -245,19 +248,19 @@ export default class InjectModulesPlugin {
 		}));
 	}
 
-	injectModuleDependencies(module: any, chunk: any) {
+	injectModuleDependencies(module: NormalModule, chunk: Chunk) {
 		if (this._added.indexOf(module.userRequest) > -1) {
 			return;
 		}
 
 		this._added.push(module.userRequest);
-		module.dependencies.forEach((dependency: any) => {
+		module.dependencies.forEach(dependency => {
 			const modules = Array.isArray(dependency.module) ? dependency.module : [ dependency.module ];
-			modules.filter((module?: any) => Boolean(module))
-				.forEach((module: any) => {
+			modules.filter(module => Boolean(module))
+				.forEach(module => {
 					chunk.addModule(module);
 					module.addChunk(chunk);
-					this.injectModuleDependencies(module, chunk);
+					this.injectModuleDependencies(module as NormalModule, chunk);
 				});
 		});
 	}
@@ -274,7 +277,7 @@ export default class InjectModulesPlugin {
 	 * @return
 	 * A promise that resolves to the request data for the injected modules.
 	 */
-	resolve(resource: string, resolver: Resolver): Promise<RequestData[]> {
+	resolve(resource: string, resolver: NormalModuleFactory.Resolver): Promise<NormalModuleFactory.AfterData[]> {
 		const { context, moduleIds } = this;
 		const resourcePath = getBasePath(resource);
 

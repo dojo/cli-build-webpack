@@ -7,7 +7,7 @@ describe('css-module-decorator-loader', () => {
 		const content = `exports = 'abc'
 		exports.push(['a', 'b'])`;
 
-		const result = loader(content);
+		const result = loader.call({ resourcePath: 'blah' }, content);
 		assert.equal(result, content);
 	});
 

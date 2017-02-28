@@ -1,6 +1,6 @@
 import Pluginable from './Pluginable';
 
-class Chunk extends Pluginable {
+class MockChunk extends Pluginable {
 	modules: any[];
 
 	constructor() {
@@ -14,4 +14,4 @@ class Chunk extends Pluginable {
 }
 
 // Node-style export used to maintain consistency with other webpack mocks.
-export = Chunk;
+export = MockChunk;

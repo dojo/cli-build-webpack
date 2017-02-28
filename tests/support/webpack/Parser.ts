@@ -5,7 +5,7 @@ interface ParserState {
 	current?: NormalModule;
 }
 
-class Parser extends Pluginable {
+class MockParser extends Pluginable {
 	state: ParserState;
 
 	constructor(options?: any) {
@@ -15,4 +15,4 @@ class Parser extends Pluginable {
 }
 
 // Node-style export used to maintain consistency with other webpack mocks.
-export = Parser;
+export = MockParser;

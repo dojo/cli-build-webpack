@@ -1,6 +1,8 @@
+import webpack = require('webpack');
+
 import { basename } from 'path';
 
-export default function (this: any, content: string, map?: any): string {
+export default function (this: webpack.LoaderContext, content: string, map?: any): string {
 	let response = content;
 	const localsRexExp = /exports.locals = ({[.\s\S]*});/;
 	const matches = content.match(localsRexExp);

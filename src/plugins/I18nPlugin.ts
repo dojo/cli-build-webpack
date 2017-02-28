@@ -2,8 +2,10 @@ import { CldrData, CldrDataResponse, localeCldrPaths, supplementalCldrPaths } fr
 import { Require } from '@dojo/interfaces/loader';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as ConcatSource from 'webpack-sources/lib/ConcatSource';
-import * as NormalModuleReplacementPlugin from 'webpack/lib/NormalModuleReplacementPlugin';
+import ConcatSource = require('webpack-sources/lib/ConcatSource');
+import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
+import Compiler = require('webpack/lib/Compiler');
+import NormalModule = require('webpack/lib/NormalModule');
 import InjectModulesPlugin from './InjectModulesPlugin';
 import { hasExtension } from './util';
 
@@ -119,13 +121,13 @@ export default class DojoI18nPlugin {
 	 * @param compiler
 	 * The current compiler.
 	 */
-	apply(this: DojoI18nPlugin, compiler: any) {
+	apply(compiler: Compiler) {
 		const { defaultLocale, messageBundles, supportedLocales } = this;
 
 		compiler.apply(new NormalModuleReplacementPlugin(/\/cldr\/load$/, '@dojo/i18n/cldr/load/webpack'));
 
 		if (supportedLocales && messageBundles && messageBundles.length) {
-			messageBundles.forEach((bundle: string) => {
+			messageBundles.forEach(bundle => {
 				const localePaths = getMessageLocalePaths(bundle, supportedLocales);
 
 				if (localePaths.length) {
@@ -137,8 +139,8 @@ export default class DojoI18nPlugin {
 			});
 		}
 
-		compiler.plugin('compilation', (compilation: any) => {
-			compilation.moduleTemplate.plugin('module', (source: any, module: any) => {
+		compiler.plugin('compilation', compilation => {
+			compilation.moduleTemplate.plugin('module', (source, module: NormalModule) => {
 				if (/\/cldr\/load\/webpack/.test(module.userRequest)) {
 					const cldrData = getCldrData([ defaultLocale ].concat(supportedLocales || []));
 					return new ConcatSource(`var __cldrData__ = ${JSON.stringify(cldrData)}`, '\n', source);

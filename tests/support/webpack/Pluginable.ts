@@ -1,3 +1,5 @@
+import Tapable = require('tapable');
+
 export interface Callback {
 	(...args: any[]): any;
 }
@@ -6,30 +8,18 @@ export interface Plugins {
 	[name: string]: Callback[];
 }
 
-export default class Pluginable {
-	plugins: Plugins;
-
-	constructor() {
-		this.plugins = Object.create(null) as Plugins;
+export default class Pluginable extends Tapable {
+	get plugins(): Plugins {
+		return this._plugins as any;
 	}
 
 	mockApply(name: string, ...args: any[]) {
-		const callbacks = this.plugins[name];
+		const callbacks = this._plugins[name];
 
 		if (callbacks) {
 			return callbacks.map((callback: Callback) => callback.apply(this, args));
 		}
 
 		return [];
-	}
-
-	plugin(name: string, callback: Callback) {
-		let callbacks = this.plugins[name];
-
-		if (!callbacks) {
-			callbacks = this.plugins[name] = [];
-		}
-
-		callbacks.push(callback);
 	}
 }

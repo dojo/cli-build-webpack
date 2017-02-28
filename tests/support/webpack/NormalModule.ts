@@ -1,4 +1,4 @@
-class NormalModule {
+class MockNormalModule {
 	static buildError: boolean = false;
 
 	id: number;
@@ -27,9 +27,9 @@ class NormalModule {
 		this.parser = parser;
 	}
 
-	addChunk(this: NormalModule, chunk: any) {
+	addChunk(chunk: any) {
 		this.chunks.push(chunk);
 	}
 }
 
-export = NormalModule;
+export = MockNormalModule;

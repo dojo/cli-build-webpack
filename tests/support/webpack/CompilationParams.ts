@@ -1,7 +1,7 @@
 import Pluginable from './Pluginable';
 import Parser = require('./Parser');
 
-class CompilationParams {
+class MockCompilationParams {
 	normalModuleFactory: Pluginable;
 	parser: Parser;
 
@@ -11,4 +11,4 @@ class CompilationParams {
 	}
 }
 
-export = CompilationParams;
+export = MockCompilationParams;

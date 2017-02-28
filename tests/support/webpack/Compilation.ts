@@ -1,7 +1,6 @@
 import Pluginable from './Pluginable';
-import { Callback } from '../../../src/plugins/interfaces';
 
-class Compilation extends Pluginable {
+class MockCompilation extends Pluginable {
 	inputFileSystem: any;
 	options: any;
 	modules: any[];
@@ -25,16 +24,16 @@ class Compilation extends Pluginable {
 		this.modules.push(module);
 	}
 
-	buildModule(module: any, callback: Callback) {
+	buildModule(module: any, optional: boolean, origin: any, dependencies: any[], callback: Function) {
 		module.isBuilt = true;
 		callback();
 	}
 
-	processModuleDependencies(module: any, callback: Callback) {
+	processModuleDependencies(module: any, callback: Function) {
 		module.dependenciesProcessed = true;
 		callback();
 	}
 }
 
 // Node-style export used to maintain consistency with other webpack mocks.
-export = Compilation;
+export = MockCompilation;

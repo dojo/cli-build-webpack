@@ -1,3 +1,4 @@
+import webpack = require('webpack');
 import { createSourceFile, forEachChild, Node, ScriptTarget, SyntaxKind } from 'typescript';
 import { statSync } from 'fs';
 import { resolve, dirname } from 'path';
@@ -22,11 +23,6 @@ type DtsCreatorInstance = {
 type LoaderArgs = {
 	type: string;
 	instanceName?: string;
-}
-
-export type Webpack = {
-	resourcePath: string;
-	async(): (error: Error | null, result: string, sourceMap?: string) => void;
 }
 
 const creator: DtsCreatorInstance = new DtsCreator();
@@ -73,7 +69,7 @@ function traverseNode(node: Node, filePaths: string[] = []): string[] {
 	return filePaths;
 }
 
-export default function (this: Webpack, content: string, sourceMap?: string) {
+export default function (this: webpack.LoaderContext, content: string, sourceMap?: string) {
 	const callback = this.async();
 	const { type = 'ts', instanceName }: LoaderArgs = getOptions(this);
 

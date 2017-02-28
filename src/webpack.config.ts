@@ -1,19 +1,25 @@
-const webpack = require('webpack');
+import webpack = require('webpack');
+import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
+import * as path from 'path';
+import { existsSync } from 'fs';
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer-sunburst').BundleAnalyzerPlugin;
-const path = require('path');
-const basePath = process.cwd();
 const postcssImport = require('postcss-import');
 const postcssCssNext = require('postcss-cssnext');
-import { existsSync } from 'fs';
-import * as NormalModuleReplacementPlugin from 'webpack/lib/NormalModuleReplacementPlugin';
+
 import CoreLoadPlugin from './plugins/CoreLoadPlugin';
 import I18nPlugin from './plugins/I18nPlugin';
 import InjectModulesPlugin from './plugins/InjectModulesPlugin';
 
-module.exports = function (args: any) {
+const basePath = process.cwd();
+
+import { BuildArgs } from './main';
+
+type IncludeCallback = (args: BuildArgs) => any;
+
+export default function webpackConfig(args: Partial<BuildArgs>) {
 	args = args || {};
 
 	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap' });
@@ -42,31 +48,31 @@ module.exports = function (args: any) {
 
 	const replacedModules = new Set<string>();
 
-	function includeWhen(predicate: boolean, callback: any, elseCallback: any = null) {
-		return predicate ? callback(args) : (elseCallback ? elseCallback(args) : []);
+	function includeWhen(predicate: any, callback: IncludeCallback, elseCallback: IncludeCallback | null = null) {
+		return predicate ? callback(args as any) : (elseCallback ? elseCallback(args as any) : []);
 	}
 
-	return {
+	const config: webpack.Config = {
 		externals: [
-			function (context: any, request: any, callback: any) {
+			function (context, request, callback) {
 				if (/^intern[!\/]/.test(request)) {
 					return callback(null, 'amd ' + request);
 				}
 				callback();
 			}
 		],
-		entry: includeWhen(args.element, (args: any) => {
+		entry: includeWhen(args.element, args => {
 			return {
 				[args.elementPrefix]: [ `${__dirname}/templates/custom-element.js` ],
 				'widget-core': '@dojo/widget-core'
 			};
-		}, (args: any) => {
+		}, args => {
 			return {
 				'src/main': [
 					path.join(basePath, 'src/main.css'),
 					path.join(basePath, 'src/main.ts')
 				],
-				...includeWhen(args.withTests, (args: any) => {
+				...includeWhen(args.withTests, () => {
 					return {
 						'../_build/tests/unit/all': [ path.join(basePath, 'tests/unit/all.ts') ],
 						'../_build/tests/functional/all': [ path.join(basePath, 'tests/functional/all.ts') ],
@@ -79,7 +85,7 @@ module.exports = function (args: any) {
 			};
 		}),
 		plugins: [
-			new NormalModuleReplacementPlugin(/\.css$/, (result: any) => {
+			new NormalModuleReplacementPlugin(/\.css$/, result => {
 				const requestFileName = path.resolve(result.context, result.request);
 				const jsFileName = requestFileName + '.js';
 
@@ -91,16 +97,16 @@ module.exports = function (args: any) {
 				}
 			}),
 			new webpack.ContextReplacementPlugin(/dojo-app[\\\/]lib/, { test: () => false }),
-			includeWhen(args.element, (args: any) => {
+			includeWhen(args.element, args => {
 				return new ExtractTextPlugin({ filename: `${args.elementPrefix}.css` });
-			}, (args: any) => {
+			}, () => {
 				return new ExtractTextPlugin({ filename: 'main.css', allChunks: true });
 			}),
-			includeWhen(args.element, (args: any) => {
+			includeWhen(args.element, () => {
 				return new CopyWebpackPlugin([
 					{ context: 'src', from: '**/*', ignore: [ '*.ts', '*.css', '*.html' ] }
 				]);
-			}, (args: any) => {
+			}, () => {
 				return new CopyWebpackPlugin([
 					{ context: 'src', from: '**/*', ignore: '*.ts' }
 				]);
@@ -110,33 +116,35 @@ module.exports = function (args: any) {
 				moduleIds: [ './request/xhr' ]
 			}),
 			new CoreLoadPlugin(),
-			...includeWhen(args.element, (args: any) => {
-				return [ new webpack.optimize.CommonsChunkPlugin('widget-core', 'widget-core.js') ];
+			...includeWhen(args.element, () => {
+				return [ new webpack.optimize.CommonsChunkPlugin({ name: 'widget-core', filename: 'widget-core.js' }) ];
 			}),
 			new webpack.optimize.UglifyJsPlugin({ sourceMap: true, compress: { warnings: false }, exclude: /tests[/]/ }),
-			includeWhen(args.element, (args: any) => {
+			includeWhen(args.element, args => {
 				return new HtmlWebpackPlugin({
 					inject: false,
 					template: path.join(__dirname, 'templates/custom-element.html'),
 					filename: `${args.elementPrefix}.html`
 				});
-			}, (args: any) => {
+			}, () => {
 				return new HtmlWebpackPlugin({
 					inject: true,
 					chunks: [ 'src/main' ],
 					template: 'src/index.html'
 				});
 			}),
-			...includeWhen(args.locale, (args: any) => {
+			...includeWhen(args.locale, args => {
+				const supportedLocales = Array.isArray(args.supportedLocales) ? args.supportedLocales : [ args.supportedLocales ];
+				const messageBundles = Array.isArray(args.messageBundles) ? args.messageBundles : [ args.messageBundles ];
 				return [
 					new I18nPlugin({
 						defaultLocale: args.locale,
-						supportedLocales: args.supportedLocales,
-						messageBundles: args.messagesBundles
+						supportedLocales,
+						messageBundles
 					})
 				];
 			}),
-			...includeWhen(!args.watch && !args.withTests, (args: any) => {
+			...includeWhen(!args.watch && !args.withTests, () => {
 				return [
 					new BundleAnalyzerPlugin({
 						analyzerMode: 'static',
@@ -145,7 +153,7 @@ module.exports = function (args: any) {
 					})
 				];
 			}),
-			...includeWhen(args.withTests, (args: any) => {
+			...includeWhen(args.withTests, () => {
 				return [
 					new CopyWebpackPlugin([
 						{context: 'tests', from: '**/*', ignore: '*.ts', to: '../_build/tests' }
@@ -161,7 +169,7 @@ module.exports = function (args: any) {
 		],
 		output: {
 			libraryTarget: 'umd',
-			path: includeWhen(args.element, (args: any) => {
+			path: includeWhen(args.element, args => {
 				return path.resolve(`./dist/${args.elementPrefix}`);
 			}, () => {
 				return path.resolve('./dist');
@@ -195,7 +203,7 @@ module.exports = function (args: any) {
 				]},
 				{ test: /\.js?$/, loader: 'umd-compat-loader' },
 				{ test: /globalize(\/|$)/, loader: 'imports-loader?define=>false' },
-				...includeWhen(!args.element, (args: any) => {
+				...includeWhen(!args.element, () => {
 					return [
 						{ test: /\.html$/, loader: 'html-loader' }
 					];
@@ -204,7 +212,7 @@ module.exports = function (args: any) {
 				{ test: /\.css$/, exclude: /src[\\\/].*/, loader: cssLoader },
 				{ test: /src[\\\/].*\.css?$/, loader: cssModuleLoader },
 				{ test: /\.css.js$/, exclude: /src[\\\/].*/, use: ['json-css-module-loader'] },
-				...includeWhen(args.withTests, (args: any) => {
+				...includeWhen(args.withTests, () => {
 					return [
 						{ test: /tests[\\\/].*\.ts?$/, use: [
 							'umd-compat-loader',
@@ -217,7 +225,7 @@ module.exports = function (args: any) {
 						] }
 					];
 				}),
-				...includeWhen(args.element, (args: any) => {
+				...includeWhen(args.element, args => {
 					return [
 						{ test: /custom-element\.js/, loader: `imports-loader?widgetFactory=${args.element}` }
 					];
@@ -225,4 +233,6 @@ module.exports = function (args: any) {
 			]
 		}
 	};
-};
+
+	return config;
+}
