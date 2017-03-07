@@ -112,6 +112,7 @@ declare module 'webpack/lib/webpack' {
 			externals?: { [key: string]: string | string[] | Object } | ((context: string, request: string, callback: Function) => void)[];
 			stats?: Stats;
 			plugins?: Plugin[];
+			profile?: boolean;
 		}
 		type DevtoolFilenameTemplateFunction = (info: DevtoolFilenameTemplateInfo) => string;
 		interface DevtoolFilenameTemplateInfo {

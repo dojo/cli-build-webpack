@@ -1,8 +1,9 @@
-import { beforeEach, afterEach, describe, it } from 'intern!bdd';
+import { afterEach, beforeEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import MockModule from '../support/MockModule';
 import { throwImmediately } from '../support/util';
 import * as sinon from 'sinon';
+import * as fs from 'fs';
 
 describe('main', () => {
 
@@ -30,6 +31,7 @@ describe('main', () => {
 		mockWebpackConfigModule.returns(mockWebpackConfig);
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 		sandbox.stub(console, 'log');
+		sandbox.stub(console, 'error');
 	});
 
 	afterEach(() => {
@@ -72,6 +74,11 @@ describe('main', () => {
 			options.args[7],
 			[ 'elementPrefix', { describe: 'Output file for custom element', type: 'string' }]
 		);
+
+		assert.deepEqual(
+			options.args[ 8 ],
+			[ 'debug', { describe: 'Generate package information useful for debugging', type: 'boolean' } ]
+		);
 	});
 
 	it('should run compile and log results on success', () => {
@@ -80,6 +87,15 @@ describe('main', () => {
 		return moduleUnderTest.run({}, {}).then(() => {
 			assert.isTrue(run.calledOnce);
 			assert.isTrue((<sinon.SinonStub> console.log).calledWith('some stats'));
+		});
+	});
+
+	it('should not print stats if they aren\'t there', () => {
+		const run = sandbox.stub().yields(false, null);
+		mockWebpack.returns({ run });
+		return moduleUnderTest.run({}, {}).then(() => {
+			assert.isTrue(run.calledOnce);
+			assert.isFalse((<sinon.SinonStub> console.log).called);
 		});
 	});
 
@@ -153,6 +169,84 @@ describe('main', () => {
 					supportedLocales: [ 'fr' ],
 					messageBundles: [ 'nls/main' ]
 				}), JSON.stringify(mockWebpack.args));
+			});
+		});
+	});
+
+	describe('debug options', () => {
+		beforeEach(() => {
+			mockWebpack.returns({
+				run: sandbox.stub().yields(null, {
+					toJson() {
+						return 'test json';
+					}
+				})
+			});
+		});
+
+		it('should pass the profile option to webpack', () => {
+			return moduleUnderTest.run({}, {
+				debug: true
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
+					debug: true
+				}), JSON.stringify(mockWebpack.args));
+			});
+		});
+
+		it('should create profile json file', () => {
+			const fsMock = sandbox.stub(fs, 'writeFileSync');
+
+			mockWebpackConfigModule.returns({
+				entry: {
+					'src/main': [
+						'src/main.styl',
+						'src/main.ts'
+					]
+				},
+				profile: true
+			});
+
+			return moduleUnderTest.run(null, {
+				debug: true
+			}).then(() => {
+				assert.isTrue(fsMock.called);
+				assert.strictEqual(fsMock.getCall(0).args[ 0 ], 'dist/profile.json');
+				assert.strictEqual(fsMock.getCall(0).args[ 1 ], '"test json"');
+
+				fsMock.restore();
+			});
+		});
+	});
+
+	describe('custom element options', () => {
+		beforeEach(() => {
+			mockWebpack.returns({
+				run: sandbox.stub().yields(null, 'stats')
+			});
+		});
+
+		it('should set the element prefix if it matches the pattern', () => {
+			return moduleUnderTest.run({}, {
+				'element': '/path/to/createTestElement.ts'
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
+					element: '/path/to/createTestElement.ts',
+					elementPrefix: 'test'
+				}), JSON.stringify(mockWebpackConfigModule.args));
+			});
+		});
+
+		it('should error if the element prefix does not match the pattern', () => {
+			const exitMock = sandbox.stub(process, 'exit');
+
+			return moduleUnderTest.run({}, {
+				'element': '/path/to/myelement.ts'
+			}).then(() => {
+				assert.isTrue(exitMock.called);
+				assert.isTrue((<sinon.SinonStub> console.error).calledWith('"/path/to/myelement.ts" does not follow the pattern "createXYZElement". Use --elementPrefix to name element.'));
+
+				exitMock.restore();
 			});
 		});
 	});

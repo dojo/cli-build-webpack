@@ -1,8 +1,9 @@
 import { Command, Helper, OptionsHelper } from '@dojo/cli/interfaces';
 import { Argv } from 'yargs';
+import config from './webpack.config';
+import * as fs from 'fs';
 import webpack = require('webpack');
 const WebpackDevServer: any = require('webpack-dev-server');
-import config from './webpack.config';
 
 export interface BuildArgs extends Argv {
 	locale: string;
@@ -13,6 +14,7 @@ export interface BuildArgs extends Argv {
 	element: string;
 	elementPrefix: string;
 	withTests: boolean;
+	debug: boolean;
 }
 
 interface WebpackOptions {
@@ -98,6 +100,10 @@ function compile(config: webpack.Config, options: WebpackOptions): Promise<any> 
 			}
 
 			if (stats) {
+				if (config.profile) {
+					fs.writeFileSync('dist/profile.json', JSON.stringify(stats.toJson()));
+				}
+
 				console.log(stats.toString(options.stats));
 			}
 			resolve({});
@@ -147,6 +153,11 @@ const command: Command = {
 		options('elementPrefix', {
 			describe: 'Output file for custom element',
 			type: 'string'
+		});
+
+		options('debug', {
+			describe: 'Generate package information useful for debugging',
+			type: 'boolean'
 		});
 	},
 	run(helper: Helper, args: BuildArgs) {

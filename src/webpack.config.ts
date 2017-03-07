@@ -2,6 +2,9 @@ import webpack = require('webpack');
 import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 import * as path from 'path';
 import { existsSync } from 'fs';
+import CoreLoadPlugin from './plugins/CoreLoadPlugin';
+import I18nPlugin from './plugins/I18nPlugin';
+import { BuildArgs } from './main';
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -9,13 +12,7 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer-sunburst').BundleA
 const postcssImport = require('postcss-import');
 const postcssCssNext = require('postcss-cssnext');
 
-import CoreLoadPlugin from './plugins/CoreLoadPlugin';
-import I18nPlugin from './plugins/I18nPlugin';
-import InjectModulesPlugin from './plugins/InjectModulesPlugin';
-
 const basePath = process.cwd();
-
-import { BuildArgs } from './main';
 
 type IncludeCallback = (args: BuildArgs) => any;
 
@@ -58,12 +55,17 @@ export default function webpackConfig(args: Partial<BuildArgs>) {
 				if (/^intern[!\/]/.test(request)) {
 					return callback(null, 'amd ' + request);
 				}
+
+				if (/request\/providers\/node/.test(request)) {
+					return callback(null, 'amd ' + request);
+				}
+
 				callback();
 			}
 		],
 		entry: includeWhen(args.element, args => {
 			return {
-				[args.elementPrefix]: [ `${__dirname}/templates/custom-element.js` ],
+				[args.elementPrefix]: `${__dirname}/templates/custom-element.js`,
 				'widget-core': '@dojo/widget-core'
 			};
 		}, args => {
@@ -111,13 +113,12 @@ export default function webpackConfig(args: Partial<BuildArgs>) {
 					{ context: 'src', from: '**/*', ignore: '*.ts' }
 				]);
 			}),
-			new InjectModulesPlugin({
-				resourcePattern: /dojo-core\/request(\.js)?$/,
-				moduleIds: [ './request/xhr' ]
-			}),
 			new CoreLoadPlugin(),
 			...includeWhen(args.element, () => {
-				return [ new webpack.optimize.CommonsChunkPlugin({ name: 'widget-core', filename: 'widget-core.js' }) ];
+				return [ new webpack.optimize.CommonsChunkPlugin({
+					name: 'widget-core',
+					filename: 'widget-core.js'
+				}) ];
 			}),
 			new webpack.optimize.UglifyJsPlugin({ sourceMap: true, compress: { warnings: false }, exclude: /tests[/]/ }),
 			includeWhen(args.element, args => {
@@ -233,6 +234,10 @@ export default function webpackConfig(args: Partial<BuildArgs>) {
 			]
 		}
 	};
+
+	if (args.debug) {
+		config.profile = true;
+	}
 
 	return config;
 }
