@@ -64,7 +64,7 @@
     "postcss-cssnext": "^2.9.0",
     "postcss-import": "^9.0.0",
     "postcss-loader": "^1.3.0",
-    "source-map-loader": "bryanforbes/source-map-loader#463701b",
+    "source-map-loader": "bryanforbes/source-map-loader#5f1f223",
     "style-loader": "^0.13.1",
     "ts-loader": "^2.0.0",
     "typed-css-modules": "^0.2.0",
