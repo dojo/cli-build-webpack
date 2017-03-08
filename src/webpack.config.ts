@@ -2,9 +2,8 @@ import webpack = require('webpack');
 import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 import * as path from 'path';
 import { existsSync } from 'fs';
-import CoreLoadPlugin from './plugins/CoreLoadPlugin';
-import I18nPlugin from './plugins/I18nPlugin';
 import { BuildArgs } from './main';
+import Set from '@dojo/shim/Set';
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -12,11 +11,16 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer-sunburst').BundleA
 const postcssImport = require('postcss-import');
 const postcssCssNext = require('postcss-cssnext');
 
+const isCLI = process.env.DOJO_CLI;
+const packagePath = isCLI ? '.' : '@dojo/cli-build-webpack';
+const CoreLoadPlugin = require(`${packagePath}/plugins/CoreLoadPlugin`).default;
+const I18nPlugin = require(`${packagePath}/plugins/I18nPlugin`).default;
+
 const basePath = process.cwd();
 
 type IncludeCallback = (args: BuildArgs) => any;
 
-export default function webpackConfig(args: Partial<BuildArgs>) {
+function webpackConfig(args: Partial<BuildArgs>) {
 	args = args || {};
 
 	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap' });
@@ -186,7 +190,10 @@ export default function webpackConfig(args: Partial<BuildArgs>) {
 			extensions: ['.ts', '.js']
 		},
 		resolveLoader: {
-			modules: [ path.join(__dirname, 'loaders'), path.join(__dirname, 'node_modules'), 'node_modules' ]
+			modules: [
+				path.join(isCLI ? __dirname : 'node_modules/@dojo/cli-build-webpack', 'loaders'),
+				path.join(__dirname, 'node_modules'),
+				'node_modules' ]
 		},
 		module: {
 			rules: [
@@ -241,3 +248,5 @@ export default function webpackConfig(args: Partial<BuildArgs>) {
 
 	return config;
 }
+
+module.exports = isCLI ? webpackConfig : webpackConfig({});

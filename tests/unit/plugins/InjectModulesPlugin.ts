@@ -2,20 +2,21 @@ import { beforeEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import * as path from 'path';
 import * as sinon from 'sinon';
+import Pluginable from '../../support/webpack/Pluginable';
+import InjectModulesPlugin from '../../../src/plugins/InjectModulesPlugin';
+import { assign } from '@dojo/core/lang';
 import NormalModuleFactory = require('webpack/lib/NormalModuleFactory');
 import MockChunk = require('../../support/webpack/Chunk');
 import MockCompilation = require('../../support/webpack/Compilation');
 import MockCompiler = require('../../support/webpack/Compiler');
 import MockNormalModule = require('../../support/webpack/NormalModule');
-import Pluginable from '../../support/webpack/Pluginable';
-import InjectModulesPlugin from '../../../src/plugins/InjectModulesPlugin';
 
 function createModule(path: string): MockNormalModule {
 	return new MockNormalModule(path, path, path, [], path, {});
 }
 
 function getRequestData(data?: any): NormalModuleFactory.AfterData {
-	return Object.assign({
+	return assign({
 		request: '/path/to/module.js',
 		userRequest: '/path/to/module.js',
 		rawRequest: './module',

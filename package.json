@@ -17,7 +17,7 @@
     "test": "grunt test"
   },
   "devDependencies": {
-    "@dojo/cli": "2.0.0-alpha.9",
+    "@dojo/cli": "2.0.0-alpha.11",
     "@dojo/interfaces": "^2.0.0-alpha.11",
     "@dojo/loader": "2.0.0-beta.9",
     "@types/chai": "^3.4.34",
@@ -31,7 +31,6 @@
     "@types/sinon": "^1.16.32",
     "@types/source-map": "^0.5.0",
     "codecov.io": "0.1.6",
-    "dts-generator": "~1.7.0",
     "glob": "^7.0.3",
     "grunt": "~1.0.1",
     "grunt-dojo2": "^2.0.0-beta.18",
@@ -43,14 +42,13 @@
     "remap-istanbul": "^0.6.4",
     "sinon": "^1.17.5",
     "tslint": "^3.15.1",
-    "typescript": "~2.2.1",
     "yargs": "^5.0.0"
   },
   "dependencies": {
-    "@dojo/core": "2.0.0-alpha.20",
-    "@dojo/has": "2.0.0-alpha.7",
+    "@dojo/core": "2.0.0-alpha.25",
+    "@dojo/has": "2.0.0-alpha.8",
     "@dojo/i18n": "2.0.0-alpha.5",
-    "@dojo/shim": "2.0.0-beta.8",
+    "@dojo/shim": "2.0.0-beta.10",
     "cldr-data": "^30.0.1",
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.26.1",
@@ -61,6 +59,7 @@
     "imports-loader": "^0.7.0",
     "json-css-module-loader": "^1.0.0",
     "loader-utils": "^1.0.2",
+    "pkg-dir": "^1.0.0",
     "postcss-cssnext": "^2.9.0",
     "postcss-import": "^9.0.0",
     "postcss-loader": "^1.3.0",
@@ -71,6 +70,7 @@
     "umd-compat-loader": "^1.0.1",
     "webpack": "^2.2.1",
     "webpack-bundle-analyzer-sunburst": "^1.2.0",
-    "webpack-dev-server": "^2.3.0"
+    "webpack-dev-server": "^2.3.0",
+    "typescript": "~2.2.1"
   }
 }

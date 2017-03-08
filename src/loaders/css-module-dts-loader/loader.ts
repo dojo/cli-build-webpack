@@ -1,7 +1,8 @@
 import webpack = require('webpack');
 import { createSourceFile, forEachChild, Node, ScriptTarget, SyntaxKind } from 'typescript';
 import { statSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { dirname, resolve } from 'path';
+import Map from '@dojo/shim/Map';
 const DtsCreator = require('typed-css-modules');
 const { getOptions } = require('loader-utils');
 const instances = require('ts-loader/dist/instances');
@@ -85,7 +86,10 @@ export default function (this: webpack.LoaderContext, content: string, sourceMap
 
 					if (instanceName) {
 						const instanceWrapper = instances.getTypeScriptInstance({ instance: instanceName });
-						instanceWrapper.instance.files[this.resourcePath] = false;
+
+						if (instanceWrapper.instance) {
+							instanceWrapper.instance.files[ this.resourcePath ] = false;
+						}
 					}
 
 					const generationPromises = cssFilePaths.map((cssFilePath) => generateDTSFile(cssFilePath));

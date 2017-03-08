@@ -5,6 +5,7 @@ import Chunk = require('webpack/lib/Chunk');
 import Compiler = require('webpack/lib/Compiler');
 import Compilation = require('webpack/lib/Compilation');
 import { getBasePath } from './util';
+import Map from '@dojo/shim/Map';
 const basePath = path.join(process.cwd(), 'node_modules');
 
 export interface InjectModulesPluginOptions {
@@ -137,7 +138,7 @@ export default class InjectModulesPlugin {
 
 		validateModuleIds(moduleIds);
 		this._added = [];
-		this._modules = new Map();
+		this._modules = new Map<string, NormalModule>();
 		this.context = context;
 		this.moduleIds = moduleIds;
 		this.resourcePattern = resourcePattern;

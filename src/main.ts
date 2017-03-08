@@ -1,9 +1,11 @@
-import { Command, Helper, OptionsHelper } from '@dojo/cli/interfaces';
+import { Command, EjectOutput, Helper, OptionsHelper } from '@dojo/cli/interfaces';
 import { Argv } from 'yargs';
-import config from './webpack.config';
 import * as fs from 'fs';
+import * as path from 'path';
 import webpack = require('webpack');
 const WebpackDevServer: any = require('webpack-dev-server');
+const config: ConfigFactory = require('./webpack.config');
+const pkgDir = require('pkg-dir');
 
 export interface BuildArgs extends Argv {
 	locale: string;
@@ -15,6 +17,10 @@ export interface BuildArgs extends Argv {
 	elementPrefix: string;
 	withTests: boolean;
 	debug: boolean;
+}
+
+interface ConfigFactory {
+	(args: Partial<BuildArgs>): webpack.Config;
 }
 
 interface WebpackOptions {
@@ -111,6 +117,22 @@ function compile(config: webpack.Config, options: WebpackOptions): Promise<any> 
 	});
 }
 
+function buildNpmDependencies(): any {
+	try {
+		const packagePath = pkgDir.sync(__dirname);
+		const packageJsonFilePath = path.join(packagePath, 'package.json');
+		const packageJson = <any> require(packageJsonFilePath);
+
+		return {
+			[packageJson.name]: packageJson.version,
+			...packageJson.dependencies
+		};
+	}
+	catch (e) {
+		throw new Error('Failed reading dependencies from package.json - ' + e.message);
+	}
+}
+
 const command: Command = {
 	description: 'create a build of your application',
 	register(options: OptionsHelper): void {
@@ -176,6 +198,23 @@ const command: Command = {
 		else {
 			return compile(config(configArgs), options);
 		}
+	},
+	eject(helper: Helper) {
+		const ejectOutput: EjectOutput = {
+			npm: {
+				devDependencies: {
+					...buildNpmDependencies()
+				}
+			},
+			copy: {
+				path: __dirname,
+				files: [
+					'./webpack.config.js'
+				]
+			}
+		};
+
+		return ejectOutput;
 	}
 };
 export default command;

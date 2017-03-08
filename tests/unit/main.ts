@@ -13,13 +13,16 @@ describe('main', () => {
 	let mockWebpackConfig: any;
 	let mockWebpackConfigModule: any;
 	let sandbox: sinon.SinonSandbox;
+	let mockReadFile: any;
 
 	beforeEach(() => {
+		process.env.DOJO_CLI = true;
+
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/main');
 		mockModule.dependencies(['./webpack.config', 'webpack', 'webpack-dev-server']);
 		mockWebpack = mockModule.getMock('webpack').ctor;
-		mockWebpackConfigModule = mockModule.getMock('./webpack.config').default;
+		mockWebpackConfigModule = mockModule.getMock('./webpack.config').ctor;
 		mockWebpackConfig = {
 			entry: {
 				'src/main': [
@@ -32,6 +35,7 @@ describe('main', () => {
 		moduleUnderTest = mockModule.getModuleUnderTest().default;
 		sandbox.stub(console, 'log');
 		sandbox.stub(console, 'error');
+		mockReadFile = sandbox.stub(fs, 'readFileSync');
 	});
 
 	afterEach(() => {
@@ -248,6 +252,31 @@ describe('main', () => {
 
 				exitMock.restore();
 			});
+		});
+	});
+
+	describe('eject', () => {
+		it('should contain eject information', () => {
+			mockReadFile.returns(`{
+				"name": "@dojo/cli-build-webpack",
+				"version": "test-version",
+				"dependencies": {
+					"dep1": "dep1v",
+					"dep2": "dep2v"
+				}
+			}`);
+
+			const result = moduleUnderTest.eject({});
+
+			assert.isTrue('npm' in result, 'expecting npm property');
+			assert.isTrue('devDependencies' in result.npm, 'expecting a devDependencies property');
+			assert.deepEqual(result.npm.devDependencies, {
+				'@dojo/cli-build-webpack': 'test-version',
+				'dep1': 'dep1v',
+				'dep2': 'dep2v'
+			});
+			assert.isTrue('copy' in result, 'expecting a copy property');
+			assert.deepEqual(result.copy.files, [ './webpack.config.js' ]);
 		});
 	});
 });
