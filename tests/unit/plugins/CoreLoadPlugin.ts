@@ -9,7 +9,7 @@ import CompilationParams = require('../../support/webpack/CompilationParams');
 import Compiler = require('../../support/webpack/Compiler');
 import NormalModule = require('../../support/webpack/NormalModule');
 import LoadPlugin from '../../../src/plugins/CoreLoadPlugin';
-import { resolveMid } from '../../../src/plugins/util';
+import { resolveMid } from '../../../src/plugins/util/main';
 
 if (typeof __dirname === 'undefined') {
 	(<any> global).__dirname = path.join(process.cwd(), 'src', 'plugins', 'core-load');

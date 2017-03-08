@@ -15,6 +15,18 @@ describe('main', () => {
 	let sandbox: sinon.SinonSandbox;
 	let mockReadFile: any;
 
+	function getMockConfiguration(config?: any) {
+		return {
+			configuration: {
+				get(name: string) {
+					if (config && name in config) {
+						return config[name];
+					}
+				}
+			}
+		};
+	}
+
 	beforeEach(() => {
 		process.env.DOJO_CLI = true;
 
@@ -88,7 +100,7 @@ describe('main', () => {
 	it('should run compile and log results on success', () => {
 		const run = sandbox.stub().yields(false, 'some stats');
 		mockWebpack.returns({ run });
-		return moduleUnderTest.run({}, {}).then(() => {
+		return moduleUnderTest.run(getMockConfiguration(), {}).then(() => {
 			assert.isTrue(run.calledOnce);
 			assert.isTrue((<sinon.SinonStub> console.log).calledWith('some stats'));
 		});
@@ -97,7 +109,7 @@ describe('main', () => {
 	it('should not print stats if they aren\'t there', () => {
 		const run = sandbox.stub().yields(false, null);
 		mockWebpack.returns({ run });
-		return moduleUnderTest.run({}, {}).then(() => {
+		return moduleUnderTest.run(getMockConfiguration(), {}).then(() => {
 			assert.isTrue(run.calledOnce);
 			assert.isFalse((<sinon.SinonStub> console.log).called);
 		});
@@ -107,7 +119,7 @@ describe('main', () => {
 		const compilerError = new Error('compiler error');
 		const run = sandbox.stub().yields(compilerError, null);
 		mockWebpack.returns({ run });
-		return moduleUnderTest.run({}, {}).then(
+		return moduleUnderTest.run(getMockConfiguration(), {}).then(
 			throwImmediately,
 			(e: Error) => {
 				assert.isTrue(run.calledOnce);
@@ -119,7 +131,7 @@ describe('main', () => {
 	it('should run watch, setting appropriate webpack options', () => {
 		const mockWebpackDevServer = mockModule.getMock('webpack-dev-server');
 		mockWebpackDevServer.listen = sandbox.stub().yields();
-		moduleUnderTest.run({}, { watch: true });
+		moduleUnderTest.run(getMockConfiguration(), { watch: true });
 		return new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
 			assert.isTrue(mockWebpackDevServer.listen.calledOnce);
 			assert.isTrue((<sinon.SinonStub> console.log).firstCall.calledWith('Starting server on http://localhost:9999'));
@@ -132,7 +144,7 @@ describe('main', () => {
 		const compilerError = new Error('compiler error');
 		const mockWebpackDevServer = mockModule.getMock('webpack-dev-server');
 		mockWebpackDevServer.listen = sandbox.stub().yields(compilerError);
-		return moduleUnderTest.run({}, { watch: true }).then(
+		return moduleUnderTest.run(getMockConfiguration(), { watch: true }).then(
 			throwImmediately,
 			(e: Error) => {
 				assert.isTrue(mockWebpackDevServer.listen.calledOnce);
@@ -149,7 +161,7 @@ describe('main', () => {
 		});
 
 		it('should correctly set i18n options', () => {
-			return moduleUnderTest.run({}, {
+			return moduleUnderTest.run(getMockConfiguration(), {
 				locale: 'en',
 				supportedLocales: [ 'fr' ],
 				messageBundles: [ 'nls/main' ]
@@ -163,7 +175,7 @@ describe('main', () => {
 		});
 
 		it('should allow string values for supported locales and message bundles', () => {
-			return moduleUnderTest.run({}, {
+			return moduleUnderTest.run(getMockConfiguration(), {
 				locale: 'en',
 				supportedLocales: 'fr',
 				messageBundles: 'nls/main'
@@ -171,6 +183,63 @@ describe('main', () => {
 				assert.isTrue(mockWebpackConfigModule.calledWith({
 					locale: 'en',
 					supportedLocales: [ 'fr' ],
+					messageBundles: [ 'nls/main' ]
+				}), JSON.stringify(mockWebpack.args));
+			});
+		});
+
+		it('should load options from .dojorc', () => {
+			const config = getMockConfiguration({
+				'build-webpack': {
+					locale: 'en',
+					supportedLocales: 'fr',
+					messageBundles: 'nls/main'
+				}
+			});
+			return moduleUnderTest.run(config, {}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
+					locale: 'en',
+					supportedLocales: [ 'fr' ],
+					messageBundles: [ 'nls/main' ]
+				}), JSON.stringify(mockWebpack.args));
+			});
+		});
+
+		it('should load use command line options over those from .dojorc', () => {
+			const config = getMockConfiguration({
+				'build-webpack': {
+					supportedLocales: 'fr'
+				}
+			});
+			return moduleUnderTest.run(config, {
+				locale: 'en',
+				supportedLocales: [ 'fr', 'es' ],
+				messageBundles: 'nls/main'
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
+					locale: 'en',
+					supportedLocales: [ 'fr', 'es' ],
+					messageBundles: [ 'nls/main' ]
+				}), JSON.stringify(mockWebpack.args));
+			});
+		});
+
+		it('should not override .dojorc with undefined values', () => {
+			const config = getMockConfiguration({
+				'build-webpack': {
+					locale: 'en',
+					supportedLocales: [ 'fr', 'es' ],
+					messageBundles: 'nls/main'
+				}
+			});
+			return moduleUnderTest.run(config, {
+				locale: undefined,
+				supportedLocales: undefined,
+				messageBundles: undefined
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
+					locale: 'en',
+					supportedLocales: [ 'fr', 'es' ],
 					messageBundles: [ 'nls/main' ]
 				}), JSON.stringify(mockWebpack.args));
 			});
@@ -189,7 +258,7 @@ describe('main', () => {
 		});
 
 		it('should pass the profile option to webpack', () => {
-			return moduleUnderTest.run({}, {
+			return moduleUnderTest.run(getMockConfiguration(), {
 				debug: true
 			}).then(() => {
 				assert.isTrue(mockWebpackConfigModule.calledWith({
@@ -211,7 +280,7 @@ describe('main', () => {
 				profile: true
 			});
 
-			return moduleUnderTest.run(null, {
+			return moduleUnderTest.run(getMockConfiguration(), {
 				debug: true
 			}).then(() => {
 				assert.isTrue(fsMock.called);
@@ -231,7 +300,7 @@ describe('main', () => {
 		});
 
 		it('should set the element prefix if it matches the pattern', () => {
-			return moduleUnderTest.run({}, {
+			return moduleUnderTest.run(getMockConfiguration(), {
 				'element': '/path/to/createTestElement.ts'
 			}).then(() => {
 				assert.isTrue(mockWebpackConfigModule.calledWith({
@@ -244,7 +313,7 @@ describe('main', () => {
 		it('should error if the element prefix does not match the pattern', () => {
 			const exitMock = sandbox.stub(process, 'exit');
 
-			return moduleUnderTest.run({}, {
+			return moduleUnderTest.run(getMockConfiguration(), {
 				'element': '/path/to/myelement.ts'
 			}).then(() => {
 				assert.isTrue(exitMock.called);

@@ -28,6 +28,41 @@ export function hasExtension(path: string): boolean {
 }
 
 /**
+ * Add any unique strings from the second array into the first array.
+ *
+ * @param left
+ * An array to merge values into.
+ *
+ * @param right
+ * An array with values to merge into the first array.
+ *
+ * @return
+ * A new array containing all unique values from both input arrays.
+ */
+export function mergeUnique(left: string[], right: string[]): string[] {
+	return right.reduce((result: string[], value: string) => {
+		if (result.indexOf(value) < 0) {
+			result.push(value);
+		}
+		return result;
+	}, left.slice());
+}
+
+/**
+ * Test whether a module ID is relative or absolute.
+ *
+ * @param id
+ * The module ID.
+ *
+ * @return
+ * `true` if the path is relative; `false` otherwise.
+ */
+export function isRelative(id: string): boolean {
+	const first = id.charAt(0);
+	return first !== '/' && first !== '@' && /^\W/.test(id);
+}
+
+/**
  * Resolve a module ID to its absolute file path.
  *
  * @param mid

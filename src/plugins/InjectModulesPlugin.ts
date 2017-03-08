@@ -4,7 +4,7 @@ import NormalModuleFactory = require('webpack/lib/NormalModuleFactory');
 import Chunk = require('webpack/lib/Chunk');
 import Compiler = require('webpack/lib/Compiler');
 import Compilation = require('webpack/lib/Compilation');
-import { getBasePath } from './util';
+import { getBasePath, isRelative } from './util/main';
 import Map from '@dojo/shim/Map';
 const basePath = path.join(process.cwd(), 'node_modules');
 
@@ -35,17 +35,6 @@ export type ModuleIds = string[] | { [basePath: string]: string[] };
 
 /**
  * @private
- * Test whether a module ID is relative or absolute.
- *
- * @param id
- * The module ID.
- */
-function isRelative(id: string): boolean {
-	return /^\W/.test(id);
-}
-
-/**
- * @private
  * Generate the request and loader data for the specified module ID within the specified context.
  *
  * @param id
@@ -66,6 +55,7 @@ function isRelative(id: string): boolean {
 function resolveContextPath(id: string, absContext: string, relativeContext: string, resolver: NormalModuleFactory.Resolver) {
 	return new Promise<NormalModuleFactory.AfterData>((resolve, reject) => {
 		resolver({
+			contextInfo: {},
 			context: isRelative(id) ? relativeContext : absContext,
 			request: id
 		}, (error, result) => {
@@ -153,38 +143,13 @@ export default class InjectModulesPlugin {
 	apply(compiler: Compiler) {
 		const { resourcePattern } = this;
 		const resources: string[] = [];
-		let compilation: Compilation | null;
 
 		setContext(this, compiler);
 
-		compiler.plugin('compilation', currentCompilation => {
-			if (!compilation) {
-				compilation = currentCompilation;
-				compilation.plugin('optimize-chunks', chunks => {
-					this._modules.forEach(module => {
-						chunks.forEach(chunk => {
-							const requests = chunk.modules.map((module: NormalModule) => module.userRequest);
-
-							if (requests.some(id => resources.indexOf(id) > -1)) {
-								chunk.addModule(module);
-								module.addChunk(chunk);
-								this.injectModuleDependencies(module, chunk);
-							}
-						});
-					});
-				});
-			}
-		});
-
-		compiler.plugin('done', () => {
-			this._added.length = 0;
-			compilation = null;
-		});
-
-		compiler.plugin('normal-module-factory', factory => {
+		compiler.plugin('compilation', (compilation, data) => {
 			// Listening to the "resolver" event gives access to the resolver function that allows the injected module
 			// IDs to be mapped to not only their resources, but also to any loaders.
-			factory.plugin('resolver', resolver => {
+			data.normalModuleFactory.plugin('resolver', (resolver: NormalModuleFactory.Resolver): NormalModuleFactory.Resolver => {
 				return (data: NormalModuleFactory.BeforeData, callback: NormalModuleFactory.ResolverCallback): void => {
 					resolver(data, (error, result) => {
 						if (error) {
@@ -210,6 +175,24 @@ export default class InjectModulesPlugin {
 					});
 				};
 			});
+
+			compilation.plugin('optimize-chunks', (chunks) => {
+				this._modules.forEach((module: NormalModule) => {
+					chunks.forEach((chunk) => {
+						const requests = chunk.modules.map((module: NormalModule) => module.userRequest);
+
+						if (requests.some((id: string) => resources.indexOf(id) > -1)) {
+							chunk.addModule(module);
+							module.addChunk(chunk);
+							this.injectModuleDependencies(module, chunk);
+						}
+					});
+				});
+			});
+		});
+
+		compiler.plugin('done', () => {
+			this._added.length = 0;
 		});
 	}
 
@@ -229,19 +212,24 @@ export default class InjectModulesPlugin {
 		return Promise.all(data.map(item => {
 			return new Promise<void>((resolve, reject) => {
 				const { request, userRequest, rawRequest, loaders, resource, parser } = item;
-				const module = new NormalModule(request, userRequest, rawRequest, loaders, resource, parser);
+				let module = this._modules.get(resource);
+
+				if (!module) {
+					module = new NormalModule(request, userRequest, rawRequest, loaders, resource, parser);
+					this._modules.set(resource, module);
+				}
+
 				compilation.addModule(module);
 				compilation.buildModule(module, false, null, null, (error?: Error) => {
 					if (error) {
 						return reject(error);
 					}
 
-					compilation.processModuleDependencies(module, (error?: Error) => {
+					compilation.processModuleDependencies(module as NormalModule, (error?: Error) => {
 						if (error) {
 							return reject(error);
 						}
 
-						this._modules.set(resource, module);
 						resolve();
 					});
 				});

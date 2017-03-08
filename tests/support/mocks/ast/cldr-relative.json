@@ -1,0 +1,287 @@
+{
+  "type": "Program",
+  "start": 0,
+  "end": 79,
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 0
+    }
+  },
+  "range": [
+    0,
+    79
+  ],
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "start": 0,
+      "end": 31,
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 31
+        }
+      },
+      "range": [
+        0,
+        31
+      ],
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 6,
+          "end": 30,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 6
+            },
+            "end": {
+              "line": 1,
+              "column": 30
+            }
+          },
+          "range": [
+            6,
+            30
+          ],
+          "id": {
+            "type": "Identifier",
+            "start": 6,
+            "end": 10,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 6
+              },
+              "end": {
+                "line": 1,
+                "column": 10
+              }
+            },
+            "range": [
+              6,
+              10
+            ],
+            "name": "load"
+          },
+          "init": {
+            "type": "CallExpression",
+            "start": 13,
+            "end": 30,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 13
+              },
+              "end": {
+                "line": 1,
+                "column": 30
+              }
+            },
+            "range": [
+              13,
+              30
+            ],
+            "callee": {
+              "type": "Identifier",
+              "start": 13,
+              "end": 20,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 13
+                },
+                "end": {
+                  "line": 1,
+                  "column": 20
+                }
+              },
+              "range": [
+                13,
+                20
+              ],
+              "name": "require"
+            },
+            "arguments": [
+              {
+                "type": "Literal",
+                "start": 21,
+                "end": 29,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 21
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 29
+                  }
+                },
+                "range": [
+                  21,
+                  29
+                ],
+                "value": "@dojo/i18n/cldr/load",
+                "raw": "'@dojo/i18n/cldr/load'"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "const"
+    },
+    {
+      "type": "ExpressionStatement",
+      "start": 32,
+      "end": 78,
+      "loc": {
+        "start": {
+          "line": 2,
+          "column": 0
+        },
+        "end": {
+          "line": 2,
+          "column": 46
+        }
+      },
+      "range": [
+        32,
+        78
+      ],
+      "expression": {
+        "type": "CallExpression",
+        "start": 32,
+        "end": 77,
+        "loc": {
+          "start": {
+            "line": 2,
+            "column": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 45
+          }
+        },
+        "range": [
+          32,
+          77
+        ],
+        "callee": {
+          "type": "MemberExpression",
+          "start": 32,
+          "end": 44,
+          "loc": {
+            "start": {
+              "line": 2,
+              "column": 0
+            },
+            "end": {
+              "line": 2,
+              "column": 12
+            }
+          },
+          "range": [
+            32,
+            44
+          ],
+          "object": {
+            "type": "Identifier",
+            "start": 32,
+            "end": 36,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 0
+              },
+              "end": {
+                "line": 2,
+                "column": 4
+              }
+            },
+            "range": [
+              32,
+              36
+            ],
+            "name": "load"
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 37,
+            "end": 44,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 5
+              },
+              "end": {
+                "line": 2,
+                "column": 12
+              }
+            },
+            "range": [
+              37,
+              44
+            ],
+            "name": "default"
+          },
+          "computed": false
+        },
+        "arguments": [
+          {
+            "type": "ArrayExpression",
+            "start": 45,
+            "end": 76,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 13
+              },
+              "end": {
+                "line": 2,
+                "column": 44
+              }
+            },
+            "range": [
+              45,
+              76
+            ],
+            "elements": [
+              {
+                "type": "Literal",
+                "start": 47,
+                "end": 74,
+                "loc": {
+                  "start": {
+                    "line": 2,
+                    "column": 15
+                  },
+                  "end": {
+                    "line": 2,
+                    "column": 42
+                  }
+                },
+                "range": [
+                  47,
+                  74
+                ],
+                "value": "../path/to/cldr/data.json",
+                "raw": "'../path/to/cldr/data.json'"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "sourceType": "module"
+}

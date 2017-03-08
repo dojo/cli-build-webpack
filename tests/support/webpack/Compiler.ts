@@ -24,7 +24,8 @@ class MockCompiler extends Pluginable {
 
 	mockApply(name: string, ...args: any[]) {
 		if (name === 'compilation' && args.length === 1) {
-			args[1] = new MockCompilationParams();
+			const mockCompilation = args[0];
+			mockCompilation.params = args[1] = new MockCompilationParams();
 		}
 		return super.mockApply(name, ...args);
 	}

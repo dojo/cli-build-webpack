@@ -4,7 +4,7 @@ import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacem
 import Compiler = require('webpack/lib/Compiler');
 import NormalModule = require('webpack/lib/NormalModule');
 import Parser = require('webpack/lib/Parser');
-import { getBasePath, resolveMid } from './util';
+import { getBasePath, resolveMid } from './util/main';
 
 interface ModuleIdMap {
 	[id: string]: any;

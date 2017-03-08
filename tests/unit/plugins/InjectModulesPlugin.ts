@@ -2,14 +2,13 @@ import { beforeEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import Pluginable from '../../support/webpack/Pluginable';
-import InjectModulesPlugin from '../../../src/plugins/InjectModulesPlugin';
 import { assign } from '@dojo/core/lang';
 import NormalModuleFactory = require('webpack/lib/NormalModuleFactory');
 import MockChunk = require('../../support/webpack/Chunk');
 import MockCompilation = require('../../support/webpack/Compilation');
 import MockCompiler = require('../../support/webpack/Compiler');
 import MockNormalModule = require('../../support/webpack/NormalModule');
+import InjectModulesPlugin from '../../../src/plugins/InjectModulesPlugin';
 
 function createModule(path: string): MockNormalModule {
 	return new MockNormalModule(path, path, path, [], path, {});
@@ -24,6 +23,30 @@ function getRequestData(data?: any): NormalModuleFactory.AfterData {
 		resource: '/path/to/module.js',
 		parser: null
 	}, data);
+}
+
+function jumpToResolver(plugin?: InjectModulesPlugin | null, resolverError?: Error) {
+	const compiler = new MockCompiler();
+	const compilation = new MockCompilation();
+	plugin = plugin || new InjectModulesPlugin({
+		resourcePattern: /test\/module/,
+		moduleIds: [ './module' ]
+	});
+
+	plugin.apply(compiler);
+	compiler.mockApply('compilation', compilation);
+
+	const { normalModuleFactory } = compilation.params;
+	const resolver = normalModuleFactory.mockApply('resolver', (value: any, callback: NormalModuleFactory.ResolverCallback) => {
+		if (resolverError) {
+			callback(resolverError, value);
+		}
+		else {
+			callback(null, value);
+		}
+	})[0];
+
+	return { compiler, compilation, plugin, resolver };
 }
 
 describe('inject-modules', () => {
@@ -69,6 +92,7 @@ describe('inject-modules', () => {
 					assert.sameDeepMembers(result, [ data ]);
 					assert.deepEqual(input, {
 						context: '/parent',
+						contextInfo: {},
 						request: './module'
 					}, 'The context is issuer.');
 				})
@@ -82,6 +106,7 @@ describe('inject-modules', () => {
 					assert.sameDeepMembers(result, [ data ]);
 					assert.deepEqual(input, {
 						context: '/parent',
+						contextInfo: {},
 						request: './module'
 					}, 'The context is issuer even when a context for the module is provided.');
 				});
@@ -106,6 +131,7 @@ describe('inject-modules', () => {
 					assert.sameDeepMembers(result, [ data ]);
 					assert.deepEqual(input, {
 						context: '/base/path',
+						contextInfo: {},
 						request: 'module'
 					}, 'The default context is used.');
 				})
@@ -119,6 +145,7 @@ describe('inject-modules', () => {
 					assert.sameDeepMembers(result, [ data ]);
 					assert.deepEqual(input, {
 						context: '/context',
+						contextInfo: {},
 						request: 'module'
 					}, 'The specified context is used.');
 				});
@@ -167,6 +194,22 @@ describe('inject-modules', () => {
 				});
 		});
 
+		it('should add the same module to different compilations', () => {
+			const firstCompilation: any = new MockCompilation();
+			const secondCompilation: any = new MockCompilation();
+			const plugin = new InjectModulesPlugin({
+				resourcePattern: /test\/module/,
+				moduleIds: [ './module' ]
+			});
+			const data = getRequestData();
+
+			return plugin.createModules([ data ], firstCompilation)
+				.then(() => plugin.createModules([ data ], secondCompilation))
+				.then(() => {
+					assert.strictEqual(firstCompilation.modules[0], secondCompilation.modules[0]);
+				});
+		});
+
 		it('should not add modules to the compilation on a build error', () => {
 			const compilation = new MockCompilation();
 			const plugin = new InjectModulesPlugin({
@@ -174,7 +217,7 @@ describe('inject-modules', () => {
 				moduleIds: [ './module' ]
 			});
 
-			sinon.stub(compilation, 'buildModule', (module: MockNormalModule, optional: any, origin: MockNormalModule | null, dependencies: any[] | null, callback: NormalModuleFactory.ResolverCallback) => {
+			sinon.stub(compilation, 'buildModule', (module: MockNormalModule, optional: boolean, origin: MockNormalModule | null, dependencies: any[] | null, callback: NormalModuleFactory.ResolverCallback) => {
 				callback(new Error('build error'));
 			});
 			sinon.spy(compilation, 'processModuleDependencies');
@@ -220,7 +263,7 @@ describe('inject-modules', () => {
 			const { plugins } = compiler;
 
 			assert.strictEqual(plugins['compilation'].length, 1);
-			assert.strictEqual(plugins['normal-module-factory'].length, 1);
+			assert.strictEqual(plugins['done'].length, 1);
 		});
 
 		it('should register compilation plugins', () => {
@@ -238,10 +281,9 @@ describe('inject-modules', () => {
 			assert.strictEqual(plugins['optimize-chunks'].length, 1);
 		});
 
-		it('should register compilations plugins only once', () => {
+		it('should register factory plugins', () => {
 			const compiler = new MockCompiler();
 			const compilation = new MockCompilation();
-			const otherCompilation = new MockCompilation();
 			const plugin = new InjectModulesPlugin({
 				resourcePattern: /test\/module/,
 				moduleIds: [ './module' ]
@@ -249,26 +291,9 @@ describe('inject-modules', () => {
 
 			plugin.apply(compiler);
 			compiler.mockApply('compilation', compilation);
-			compiler.mockApply('compilation', otherCompilation);
 
-			assert.strictEqual(compilation.plugins['optimize-chunks'].length, 1);
-			assert.notOk(otherCompilation.plugins['optimize-chunks'],
-				'Plugins for additional compilations not registered.');
-		});
-
-		it('should register factory plugins', () => {
-			const compiler = new MockCompiler();
-			const factory = new Pluginable();
-			const plugin = new InjectModulesPlugin({
-				resourcePattern: /test\/module/,
-				moduleIds: [ './module' ]
-			});
-
-			plugin.apply(compiler);
-			compiler.mockApply('normal-module-factory', factory);
-
-			const { plugins } = factory;
-			assert.strictEqual(plugins['resolver'].length, 1);
+			const { normalModuleFactory } = compilation.params;
+			assert.strictEqual(normalModuleFactory.plugins['resolver'].length, 1);
 		});
 
 		it('should set the default context', () => {
@@ -305,6 +330,18 @@ describe('inject-modules', () => {
 				resourcePattern: /test\/module/,
 				moduleIds: [ './module' ]
 			});
+			compiler.options = {
+				resolve: {
+					modules: '/second'
+				}
+			};
+			plugin.apply(compiler);
+			assert.strictEqual(plugin.context, '/second', 'A string `resolve.root` webpack option can be used.');
+
+			plugin = new InjectModulesPlugin({
+				resourcePattern: /test\/module/,
+				moduleIds: [ './module' ]
+			});
 			compiler.options = {};
 			plugin.apply(compiler);
 			assert.strictEqual(plugin.context, path.join(process.cwd(), 'node_modules'),
@@ -314,19 +351,7 @@ describe('inject-modules', () => {
 
 	describe('"resolver" factory plugin', () => {
 		it('should immediately return on error', () => {
-			const compiler = new MockCompiler();
-			const factory = new Pluginable();
-			const plugin = new InjectModulesPlugin({
-				resourcePattern: /test\/module/,
-				moduleIds: [ './module' ]
-			});
-
-			plugin.apply(compiler);
-			compiler.mockApply('normal-module-factory', factory);
-			const resolver = factory.mockApply('resolver', (value: any, callback: NormalModuleFactory.ResolverCallback) => {
-				callback(new Error('mock error'), value);
-			})[0];
-
+			const { plugin, resolver } = jumpToResolver(null, new Error('mock error'));
 			sinon.spy(plugin, 'resolve');
 			resolver({ resource: '/path/to/parent.js' }, (error: Error) => {
 				assert.strictEqual(error.message, 'mock error');
@@ -335,19 +360,7 @@ describe('inject-modules', () => {
 		});
 
 		it('should not generate data for non-matching issuers', () => {
-			const compiler = new MockCompiler();
-			const factory = new Pluginable();
-			const plugin = new InjectModulesPlugin({
-				resourcePattern: /test\/module/,
-				moduleIds: [ './module' ]
-			});
-
-			plugin.apply(compiler);
-			compiler.mockApply('normal-module-factory', factory);
-			const resolver = factory.mockApply('resolver', (value: any, callback: NormalModuleFactory.ResolverCallback) => {
-				callback(null, value);
-			})[0];
-
+			const { plugin, resolver } = jumpToResolver();
 			sinon.spy(plugin, 'resolve');
 			resolver({ resource: '/path/to/parent.js' }, () => {
 				assert.isFalse((<any> plugin.resolve).called);
@@ -355,19 +368,7 @@ describe('inject-modules', () => {
 		});
 
 		it('should generate data for matching issuers', () => {
-			const compiler = new MockCompiler();
-			const factory = new Pluginable();
-			const plugin = new InjectModulesPlugin({
-				resourcePattern: /test\/module/,
-				moduleIds: [ './module' ]
-			});
-
-			plugin.apply(compiler);
-			compiler.mockApply('normal-module-factory', factory);
-			const resolver = factory.mockApply('resolver', (value: any, callback: NormalModuleFactory.ResolverCallback) => {
-				callback(null, value);
-			})[0];
-
+			const { plugin, resolver } = jumpToResolver();
 			sinon.spy(plugin, 'resolve');
 			sinon.stub(plugin, 'createModules').returns(Promise.resolve([ getRequestData() ]));
 
@@ -381,19 +382,7 @@ describe('inject-modules', () => {
 		});
 
 		it('should not generate data for the same issuer more than once', () => {
-			const compiler = new MockCompiler();
-			const factory = new Pluginable();
-			const plugin = new InjectModulesPlugin({
-				resourcePattern: /test\/module/,
-				moduleIds: [ './module' ]
-			});
-
-			plugin.apply(compiler);
-			compiler.mockApply('normal-module-factory', factory);
-			const resolver = factory.mockApply('resolver', (value: any, callback: NormalModuleFactory.ResolverCallback) => {
-				callback(null, value);
-			})[0];
-
+			const { plugin, resolver } = jumpToResolver();
 			assert.isFunction(resolver);
 			sinon.spy(plugin, 'resolve');
 
@@ -410,19 +399,7 @@ describe('inject-modules', () => {
 		});
 
 		it('should not create modules with a resolve error', () => {
-			const compiler = new MockCompiler();
-			const factory = new Pluginable();
-			const plugin = new InjectModulesPlugin({
-				resourcePattern: /test\/module/,
-				moduleIds: [ './module' ]
-			});
-
-			plugin.apply(compiler);
-			compiler.mockApply('normal-module-factory', factory);
-			const resolver = factory.mockApply('resolver', (value: any, callback: NormalModuleFactory.ResolverCallback) => {
-				callback(null, value);
-			})[0];
-
+			const { plugin, resolver } = jumpToResolver();
 			sinon.stub(plugin, 'resolve').returns(Promise.reject(new Error('mock error')));
 			sinon.spy(plugin, 'createModules');
 
@@ -438,22 +415,12 @@ describe('inject-modules', () => {
 	});
 
 	describe('"optimize-chunks" compilation plugin', () => {
-		function generateBuild(plugin: InjectModulesPlugin, issuer: string) {
-			return new Promise<MockChunk>(resolve => {
+		function generateBuild(plugin: InjectModulesPlugin, issuer: string): Promise<MockChunk> {
+			return new Promise((resolve) => {
 				const chunk = new MockChunk();
-				const compilation = new MockCompilation();
-				const compiler = new MockCompiler();
-				const factory = new Pluginable();
-
 				chunk.modules.push(createModule(issuer));
-				plugin.apply(compiler);
-				compiler.mockApply('compilation', compilation);
-				compiler.mockApply('normal-module-factory', factory);
 
-				const resolver = factory.mockApply('resolver', (value: any, callback: NormalModuleFactory.ResolverCallback) => {
-					callback(null, value);
-				})[0];
-
+				const { compilation, resolver } = jumpToResolver(plugin);
 				resolver({ resource: '/test/module.js' }, function () {
 					compilation.mockApply('optimize-chunks', [ chunk ]);
 					resolve(chunk);

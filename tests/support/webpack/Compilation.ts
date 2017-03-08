@@ -1,3 +1,4 @@
+import CompilationParams = require('./CompilationParams');
 import Pluginable from './Pluginable';
 
 class MockCompilation extends Pluginable {
@@ -5,6 +6,8 @@ class MockCompilation extends Pluginable {
 	options: any;
 	modules: any[];
 	moduleTemplate: Pluginable;
+	// Non-standard property used only for testing
+	params: CompilationParams;
 	resolvers: any[];
 
 	constructor(options?: any) {

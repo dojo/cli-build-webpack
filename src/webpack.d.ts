@@ -580,6 +580,7 @@ declare module 'webpack/lib/NormalModuleFactory' {
 		type Callback<T> = (error?: Error | null, nextValue?: T) => void;
 
 		interface AfterData {
+			context: string;
 			request: string;
 			userRequest: string;
 			rawRequest: string;
