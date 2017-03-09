@@ -3,6 +3,7 @@ import { Argv } from 'yargs';
 import * as fs from 'fs';
 import * as path from 'path';
 import webpack = require('webpack');
+import { underline } from 'chalk';
 const WebpackDevServer: any = require('webpack-dev-server');
 const config: ConfigFactory = require('./webpack.config');
 const pkgDir = require('pkg-dir');
@@ -224,7 +225,10 @@ const command: Command = {
 				files: [
 					'./webpack.config.js'
 				]
-			}
+			},
+			hints: [
+				'to build run ' + underline('./node_modules/.bin/webpack --config ./config/build-webpack/webpack.config.js')
+			]
 		};
 
 		return ejectOutput;

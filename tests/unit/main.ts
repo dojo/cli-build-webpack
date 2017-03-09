@@ -345,6 +345,7 @@ describe('main', () => {
 				'dep2': 'dep2v'
 			});
 			assert.isTrue('copy' in result, 'expecting a copy property');
+			assert.isTrue('hints' in result, 'should provide build hints');
 			assert.deepEqual(result.copy.files, [ './webpack.config.js' ]);
 		});
 	});
