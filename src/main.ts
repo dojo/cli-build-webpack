@@ -22,6 +22,7 @@ export interface BuildArgs extends Argv {
 	elementPrefix: string;
 	withTests: boolean;
 	debug: boolean;
+	disableLazyWidgetDetection: boolean;
 	bundles: Bundles;
 }
 
@@ -197,6 +198,11 @@ const command: Command = {
 
 		options('debug', {
 			describe: 'Generate package information useful for debugging',
+			type: 'boolean'
+		});
+
+		options('disableLazyWidgetDetection', {
+			describe: 'Disable lazy widget loading detection',
 			type: 'boolean'
 		});
 	},

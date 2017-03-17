@@ -1,6 +1,8 @@
 import { describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import * as path from 'path';
+import LoadPlugin from '../../../src/plugins/CoreLoadPlugin';
+import { resolveMid } from '../../../src/plugins/util/main';
 // import * as sinon from 'sinon';
 import ConcatSource = require('webpack-sources/lib/ConcatSource');
 import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
@@ -8,8 +10,9 @@ import Compilation = require('../../support/webpack/Compilation');
 import CompilationParams = require('../../support/webpack/CompilationParams');
 import Compiler = require('../../support/webpack/Compiler');
 import NormalModule = require('../../support/webpack/NormalModule');
-import LoadPlugin from '../../../src/plugins/CoreLoadPlugin';
-import { resolveMid } from '../../../src/plugins/util/main';
+
+const webpack = require('webpack');
+const WebpackOptionsDefaulter = require('webpack/lib/WebpackOptionsDefaulter');
 
 if (typeof __dirname === 'undefined') {
 	(<any> global).__dirname = path.join(process.cwd(), 'src', 'plugins', 'core-load');
@@ -20,6 +23,42 @@ function createModule(context: string, mid: string, id: number, params: Compilat
 	const module = new NormalModule(url, url, mid, [], url, params.parser);
 	module.id = id;
 	return module;
+}
+
+function compile(entry: any, options: any, callback: any) {
+	const noOutputPath = !options.output || !options.output.path;
+	new WebpackOptionsDefaulter().process(options);
+	options.entry = entry;
+	options.context = path.join(__dirname, '../../../_build/tests/support');
+
+	if (noOutputPath) {
+		options.output.path = '/';
+	}
+
+	options.output.pathinfo = true;
+
+	const files: any = {};
+
+	const c = webpack(options);
+	c.outputFileSystem = {
+		join: function () {
+			return [].join.call(arguments, '/').replace(/\/+/g, '/');
+		},
+		mkdirp: function (path: any, callback: any) {
+			callback();
+		},
+		writeFile: function (name: any, content: any, callback: any) {
+			files[path.basename(name)] = content.toString();
+			callback();
+		}
+	};
+	c.plugin('compilation', (compilation: any) => compilation.bail = true);
+	c.run((err: any, stats: any) => {
+		if (err) {
+			throw err;
+		}
+		callback(files);
+	});
 }
 
 describe('core-load', () => {
@@ -209,5 +248,85 @@ describe('core-load', () => {
 		};
 		assert.strictEqual(source.source(), `var __modules__ = ${JSON.stringify(idMap)};\n`,
 			'Module added to ID map.');
+	});
+
+	it('should detect lazy widget loads', () => {
+		return new Promise((resolve) => {
+			compile('./lazy-load/with-define', {
+				output: {
+					chunkFilename: '[name].js'
+				},
+				plugins: [
+					new LoadPlugin({
+						detectLazyLoads: true
+					})
+				]
+			}, (files: any) => {
+				assert.sameMembers(Object.keys(files), ['main.js', 'some-module.js']);
+				resolve();
+			});
+		});
+	});
+
+	it('should require lazy widget loads in a define call', () => {
+		return new Promise((resolve) => {
+			compile('./lazy-load/simple', {
+				output: {
+					chunkFilename: '[name].js'
+				},
+				plugins: [
+					new LoadPlugin({
+						detectLazyLoads: true
+					})
+				]
+			}, (files: any) => {
+				assert.sameMembers(Object.keys(files), ['main.js']);
+				resolve();
+			});
+		});
+	});
+
+	it('should ignore ignored modules', () => {
+		return new Promise((resolve) => {
+			compile('./lazy-load/with-define', {
+				output: {
+					chunkFilename: '[name].js'
+				},
+				plugins: [
+					new LoadPlugin({
+						detectLazyLoads: true,
+						ignoredModules: [
+							'../../support/lazy-load/some-module'
+						],
+						basePath: path.join(__dirname, '../../../_build/tests/unit/plugins')
+					})
+				]
+			}, (files: any) => {
+				assert.sameMembers(Object.keys(files), ['main.js']);
+				resolve();
+			});
+		});
+	});
+
+	it('should find chunk names from regular expressions', () => {
+		return new Promise((resolve) => {
+			compile('./lazy-load/with-define', {
+				output: {
+					chunkFilename: '[name].js'
+				},
+				plugins: [
+					new LoadPlugin({
+						detectLazyLoads: true,
+						basePath: path.join(__dirname, '../../../_build/tests/unit/plugins'),
+						chunkNames: {
+							testChunk: new RegExp(/some-module/)
+						}
+					})
+				]
+			}, (files: any) => {
+				assert.sameMembers(Object.keys(files), ['main.js', 'testChunk.js']);
+				resolve();
+			});
+		});
 	});
 });
