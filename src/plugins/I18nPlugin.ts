@@ -247,7 +247,6 @@ export default class DojoI18nPlugin {
 							return deepAssign(cldrData, source);
 						}, Object.create(null));
 
-					astMap.clear();
 					return new ConcatSource(`var __cldrData__ = ${JSON.stringify(cldrData)}`, '\n', source);
 				}
 

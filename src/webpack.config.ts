@@ -61,6 +61,11 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				}
 
 				if (/request\/providers\/node/.test(request)) {
+					if (/^\./.test(request)) {
+						request = /@dojo\/core/.test(context) ?
+							'@dojo/core/request/providers/node' :
+							path.resolve(context, request);
+					}
 					return callback(null, 'amd ' + request);
 				}
 
