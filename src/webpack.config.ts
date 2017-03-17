@@ -184,7 +184,8 @@ function webpackConfig(args: Partial<BuildArgs>) {
 			}, () => {
 				return path.resolve('./dist');
 			}),
-			filename: '[name].js'
+			filename: '[name].js',
+			chunkFilename: '[name].js'
 		},
 		devtool: 'source-map',
 		resolve: {
@@ -242,6 +243,25 @@ function webpackConfig(args: Partial<BuildArgs>) {
 					return [
 						{ test: /custom-element\.js/, loader: `imports-loader?widgetFactory=${args.element}` }
 					];
+				}),
+				...includeWhen(args.bundles && Object.keys(args.bundles).length, () => {
+					const loaders: any[] = [];
+
+					Object.keys(args.bundles).forEach(bundleName => {
+						(args.bundles || {})[ bundleName ].forEach(fileName => {
+							loaders.push({
+								test: /main\.ts/,
+								loader: {
+									loader: 'imports-loader',
+									options: {
+										'__manual_bundle__': `bundle-loader?lazy&name=${bundleName}!${fileName}`
+									}
+								}
+							});
+						});
+					});
+
+					return loaders;
 				})
 			]
 		}
