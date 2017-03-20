@@ -66,6 +66,8 @@
     "source-map-loader": "bryanforbes/source-map-loader#76fd5dfcdb5f566bfbdf104d26c8f3c8ae66465d",
     "style-loader": "^0.13.1",
     "ts-loader": "^2.0.0",
+    "tslint": "^4.5.1",
+    "tslint-loader": "^3.4.3",
     "typed-css-modules": "^0.2.0",
     "typescript": "~2.2.1",
     "umd-compat-loader": "^2.0.1",

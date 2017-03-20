@@ -15,8 +15,13 @@ const isCLI = process.env.DOJO_CLI;
 const packagePath = isCLI ? '.' : '@dojo/cli-build-webpack';
 const CoreLoadPlugin = require(`${packagePath}/plugins/CoreLoadPlugin`).default;
 const I18nPlugin = require(`${packagePath}/plugins/I18nPlugin`).default;
-
 const basePath = process.cwd();
+
+let tslintExists = false;
+try {
+	require(path.join(basePath, 'tslint'));
+	tslintExists = true;
+} catch (ignore) { }
 
 type IncludeCallback = (args: BuildArgs) => any;
 
@@ -217,6 +222,18 @@ function webpackConfig(args: Partial<BuildArgs>) {
 		},
 		module: {
 			rules: [
+				...includeWhen(tslintExists, () => {
+					return [
+						{
+							test: /\.ts$/,
+							enforce: 'pre',
+							loader: 'tslint-loader',
+							options: {
+								tsConfigFile: path.join(basePath, 'tslint.json')
+							}
+						}
+					];
+				}),
 				{ test: /@dojo\/.*\.js$/, enforce: 'pre', loader: 'source-map-loader', options: { includeModulePaths: true } },
 				{ test: /src[\\\/].*\.ts?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=ts&instanceName=0_dojo' },
 				{ test: /src[\\\/].*\.css?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=css' },
