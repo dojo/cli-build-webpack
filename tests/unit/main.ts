@@ -64,7 +64,7 @@ describe('main', () => {
 		);
 		assert.deepEqual(
 			options.secondCall.args,
-			[ 'p', { alias: 'port', describe: 'port to serve on when using --watch', type: 'number' }],
+			[ 'p', { alias: 'port', describe: 'port to serve on when using --watch', type: 'number' }]
 		);
 		assert.deepEqual(
 			options.thirdCall.args,
@@ -72,7 +72,7 @@ describe('main', () => {
 		);
 		assert.deepEqual(
 			options.args[3],
-			[ 'locale', { describe: 'The default locale for the application', type: 'string' }],
+			[ 'locale', { describe: 'The default locale for the application', type: 'string' }]
 		);
 		assert.deepEqual(
 			options.args[4],

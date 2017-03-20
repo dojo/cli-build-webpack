@@ -11,20 +11,20 @@ type TSLoaderInstances = {
 	files: {
 		[key: string]: boolean;
 	}
-}
+};
 
 type DtsResult = {
 	writeFile(): Promise<void>;
-}
+};
 
 type DtsCreatorInstance = {
 	create(filePath: string, initialContents: boolean, clearCache: boolean): Promise<DtsResult>;
-}
+};
 
 type LoaderArgs = {
 	type: string;
 	instanceName?: string;
-}
+};
 
 const creator: DtsCreatorInstance = new DtsCreator();
 

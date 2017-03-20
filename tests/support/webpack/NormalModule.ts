@@ -1,5 +1,5 @@
 class MockNormalModule {
-	static buildError: boolean = false;
+	static buildError = false;
 
 	id: number;
 	isBuilt: boolean;
