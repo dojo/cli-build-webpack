@@ -9,6 +9,10 @@
   },
   "license": "BSD-3-Clause",
   "main": "main.js",
+  "engines": {
+    "node": ">=6",
+    "npm": ">=3"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/dojo/cli-build.git"
