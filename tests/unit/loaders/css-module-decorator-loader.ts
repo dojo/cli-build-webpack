@@ -14,7 +14,7 @@ describe('css-module-decorator-loader', () => {
 	it('should wrap local exports with decorator', () => {
 		const content = `exports.locals = { "hello": "world" };`;
 
-		const result = loader.bind({ resourcePath: 'testFile.css' })(content);
+		const result = loader.bind({ resourcePath: 'testFile.m.css' })(content);
 		assert.equal(result, 'exports.locals = {"hello":"world"," _key":"testFile"};');
 	});
 
@@ -24,7 +24,7 @@ describe('css-module-decorator-loader', () => {
 			"foo": "bar"
 		};`;
 
-		const result = loader.bind({ resourcePath: 'testFile.css' })(content);
+		const result = loader.bind({ resourcePath: 'testFile.m.css' })(content);
 		assert.equal(result, 'exports.locals = {"hello":"world","foo":"bar"," _key":"testFile"};');
 	});
 });

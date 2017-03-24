@@ -10,7 +10,7 @@ export default function (this: webpack.LoaderContext, content: string, map?: any
 	if (matches && matches.length > 0) {
 		const localExports = JSON.parse(matches[1]);
 		const themeKey = ' _key';
-		const key = basename(this.resourcePath, '.css');
+		const key = basename(this.resourcePath, '.m.css');
 		localExports[themeKey] = key;
 
 		response = content.replace(localsRexExp, `exports.locals = ${JSON.stringify(localExports)};`);

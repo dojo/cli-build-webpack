@@ -111,7 +111,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 			};
 		}),
 		plugins: [
-			new NormalModuleReplacementPlugin(/\.css$/, result => {
+			new NormalModuleReplacementPlugin(/\.m.css$/, result => {
 				const requestFileName = path.resolve(result.context, result.request);
 				const jsFileName = requestFileName + '.js';
 
@@ -119,7 +119,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 					replacedModules.delete(requestFileName);
 				} else if (existsSync(jsFileName)) {
 					replacedModules.add(requestFileName);
-					result.request = result.request.replace(/\.css$/, '.css.js');
+					result.request = result.request.replace(/\.m\.css$/, '.m.css.js');
 				}
 			}),
 			new webpack.ContextReplacementPlugin(/dojo-app[\\\/]lib/, { test: () => false }),
@@ -236,7 +236,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				}),
 				{ test: /@dojo\/.*\.js$/, enforce: 'pre', loader: 'source-map-loader-cli', options: { includeModulePaths: true } },
 				{ test: /src[\\\/].*\.ts?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=ts&instanceName=0_dojo' },
-				{ test: /src[\\\/].*\.css?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=css' },
+				{ test: /src[\\\/].*\.m\.css?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=css' },
 				{ test: /src[\\\/].*\.ts?$/, use: [
 					'umd-compat-loader',
 					{
@@ -256,7 +256,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				{ test: /.*\.(gif|png|jpe?g|svg)$/i, loader: 'file-loader?hash=sha512&digest=hex&name=[hash:base64:8].[ext]' },
 				{ test: /\.css$/, exclude: /src[\\\/].*/, loader: cssLoader },
 				{ test: /src[\\\/].*\.css?$/, loader: cssModuleLoader },
-				{ test: /\.css.js$/, exclude: /src[\\\/].*/, use: ['json-css-module-loader'] },
+				{ test: /\.m\.css.js$/, exclude: /src[\\\/].*/, use: ['json-css-module-loader'] },
 				...includeWhen(args.withTests, () => {
 					return [
 						{ test: /tests[\\\/].*\.ts?$/, use: [
