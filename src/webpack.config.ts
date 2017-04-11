@@ -4,6 +4,7 @@ import * as path from 'path';
 import { existsSync } from 'fs';
 import { BuildArgs } from './main';
 import Set from '@dojo/shim/Set';
+const IgnorePlugin = require('webpack/lib/IgnorePlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -74,16 +75,6 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				if (/^intern[!\/]/.test(request)) {
 					return callback(null, 'amd ' + request);
 				}
-
-				if (/request\/providers\/node/.test(request)) {
-					if (/^\./.test(request)) {
-						request = /@dojo\/core/.test(context) ?
-							'@dojo/core/request/providers/node' :
-							path.resolve(context, request);
-					}
-					return callback(null, 'amd ' + request);
-				}
-
 				callback();
 			}
 		],
@@ -111,6 +102,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 			};
 		}),
 		plugins: [
+			new IgnorePlugin(/request\/providers\/node/),
 			new NormalModuleReplacementPlugin(/\.m.css$/, result => {
 				const requestFileName = path.resolve(result.context, result.request);
 				const jsFileName = requestFileName + '.js';
