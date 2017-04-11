@@ -140,12 +140,12 @@ function webpackConfig(args: Partial<BuildArgs>) {
 					filename: 'widget-core.js'
 				}) ];
 			}),
-			includeWhen(!args.watch && !args.withTests, (args) => {
-				return new webpack.optimize.UglifyJsPlugin({
+			...includeWhen(!args.watch && !args.withTests, (args) => {
+				return [ new webpack.optimize.UglifyJsPlugin({
 					sourceMap: true,
 					compress: { warnings: false },
 					exclude: /tests[/]/
-				});
+				}) ];
 			}),
 			includeWhen(args.element, args => {
 				return new HtmlWebpackPlugin({
