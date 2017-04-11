@@ -60,6 +60,7 @@ declare module 'webpack' {
 }
 
 declare module 'webpack/lib/webpack' {
+	import WebpackBannerPlugin = require('webpack/lib/BannerPlugin');
 	import WebpackCompiler = require('webpack/lib/Compiler');
 	import WebpackContextReplacementPlugin = require('webpack/lib/ContextReplacementPlugin');
 	import WebpackNormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
@@ -69,9 +70,11 @@ declare module 'webpack/lib/webpack' {
 	function webpack(options: webpack.Config, callback?: Function): WebpackCompiler;
 
 	namespace webpack {
+		export type BannerPlugin = WebpackBannerPlugin;
 		export type Compiler = WebpackCompiler;
 		export type ContextReplacementPlugin = WebpackContextReplacementPlugin;
 		export type NormalModuleReplacementPlugin = WebpackNormalModuleReplacementPlugin;
+		export const BannerPlugin: typeof WebpackBannerPlugin;
 		export const Compiler: typeof WebpackCompiler;
 		export const ContextReplacementPlugin: typeof WebpackContextReplacementPlugin;
 		export const NormalModuleReplacementPlugin: typeof WebpackNormalModuleReplacementPlugin;
@@ -236,6 +239,25 @@ declare module 'webpack/lib/webpack' {
 	}
 
 	export = webpack;
+}
+
+declare module 'webpack/lib/BannerPlugin' {
+	import webpack = require('webpack');
+
+	interface BannerOptions {
+		banner: string;
+		entryOnly: boolean;
+		exclude: string | RegExp | (string | RegExp)[];
+		include: string | RegExp | (string | RegExp)[];
+		raw: boolean;
+		test: string | RegExp | (string | RegExp)[];
+	}
+
+	class BannerPlugin implements webpack.Plugin {
+		constructor(options: string | BannerOptions);
+		apply(compiler: webpack.Compiler): void;
+	}
+	export = BannerPlugin;
 }
 
 declare module 'webpack/lib/Chunk' {
