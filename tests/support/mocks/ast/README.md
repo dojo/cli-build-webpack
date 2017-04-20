@@ -54,7 +54,7 @@ function conditionals() {
 	}
 
 	if (true) {
-		load.default([ 'cldr-data/supplemental/currencyData.json' ]);
+		load.default(require, [ 'cldr-data/supplemental/currencyData.json' ]);
 	}
 
 	return false ? null : load.default([ 'cldr-data/main/{locale}/ca-gregorian' ]);

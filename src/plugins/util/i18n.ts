@@ -25,7 +25,7 @@ export const getLoadCallUrls = (function () {
 
 	/**
 	 * @private
-	 * Recursively walk the provided AST tree, extracting URL arrays passes to `@dojo/i18n/core/load`.
+	 * Recursively walk the provided AST tree, extracting URL arrays passed to `@dojo/i18n/core/load`.
 	 */
 	function getLoadCallUrls(item: any, importNames: string[], urls: string[] = []): string[] {
 		if (!item || importNames.length === 0) {
@@ -46,7 +46,7 @@ export const getLoadCallUrls = (function () {
 
 			if (item.type === 'CallExpression') {
 				if (item.callee.type === 'MemberExpression' && testMemberExpression(item.callee, importNames)) {
-					const arg = item.arguments[0];
+					const arg = item.arguments.length > 1 ? item.arguments[1] : item.arguments[0];
 					const argArray = extractArrayValues(arg);
 
 					if (argArray) {

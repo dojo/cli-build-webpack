@@ -2753,9 +2753,9 @@
                     },
                     "arguments": [
                       {
-                        "type": "ArrayExpression",
-                        "start": 880,
-                        "end": 926,
+                        "type": "Identifier",
+                        "start": 894,
+                        "end": 901,
                         "loc": {
                           "start": {
                             "line": 54,
@@ -2763,34 +2763,54 @@
                           },
                           "end": {
                             "line": 54,
-                            "column": 61
+                            "column": 22
                           }
                         },
                         "range": [
-                          880,
-                          926
+                          894,
+                          901
+                        ],
+                        "name": "require"
+                      },
+                      {
+                        "type": "ArrayExpression",
+                        "start": 903,
+                        "end": 949,
+                        "loc": {
+                          "start": {
+                            "line": 54,
+                            "column": 24
+                          },
+                          "end": {
+                            "line": 54,
+                            "column": 70
+                          }
+                        },
+                        "range": [
+                          903,
+                          949
                         ],
                         "elements": [
                           {
                             "type": "Literal",
-                            "start": 882,
-                            "end": 924,
+                            "start": 905,
+                            "end": 947,
                             "loc": {
                               "start": {
                                 "line": 54,
-                                "column": 17
+                                "column": 26
                               },
                               "end": {
                                 "line": 54,
-                                "column": 59
+                                "column": 68
                               }
                             },
                             "range": [
-                              882,
-                              924
+                              905,
+                              947
                             ],
-                            "value": "cldr-data/supplemental/currencyData.json",
-                            "raw": "'cldr-data/supplemental/currencyData.json'"
+                            "value": "cldr-data\/supplemental\/currencyData.json",
+                            "raw": "'cldr-data\/supplemental\/currencyData.json'"
                           }
                         ]
                       }

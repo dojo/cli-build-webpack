@@ -277,7 +277,7 @@ export default class DojoLoadPlugin {
 											/*
 											 Create the require.ensure block
 											 */
-											const dep = new RequireEnsureDependenciesBlock(temp, fnExpression, chunkName, null, parser.state.module, fnExpression.loc);
+											const dep = new RequireEnsureDependenciesBlock(temp, fnExpression, null, chunkName, null, parser.state.module, fnExpression.loc);
 
 											const old: any = parser.state.current;
 											parser.state.current = dep;
