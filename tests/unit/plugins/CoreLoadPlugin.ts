@@ -2,8 +2,7 @@ import { describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import * as path from 'path';
 import LoadPlugin from '../../../src/plugins/CoreLoadPlugin';
-import { resolveMid } from '../../../src/plugins/util/main';
-// import * as sinon from 'sinon';
+import { hasExtension, resolveMid } from '../../../src/plugins/util/main';
 import ConcatSource = require('webpack-sources/lib/ConcatSource');
 import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 import Compilation = require('../../support/webpack/Compilation');
@@ -19,7 +18,7 @@ if (typeof __dirname === 'undefined') {
 }
 
 function createModule(context: string, mid: string, id: number, params: CompilationParams): NormalModule {
-	const url = path.resolve(context, `${mid}.js`);
+	const url = path.resolve(context, hasExtension(mid) ? mid : `${mid}.js`);
 	const module = new NormalModule(url, url, mid, [], url, params.parser);
 	module.id = id;
 	return module;
@@ -94,7 +93,7 @@ describe('core-load', () => {
 	it('should inject a custom require into the issuer source', () => {
 		const compilation = new Compilation();
 		const compiler = new Compiler();
-		const plugin = new LoadPlugin();
+		const plugin = new LoadPlugin({ basePath: '/root/path' });
 
 		plugin.apply(compiler);
 		compiler.mockApply('compilation', compilation);
@@ -225,6 +224,30 @@ describe('core-load', () => {
 
 		const source = compilation.moduleTemplate.mockApply('module', '', load)[0];
 		const idMap = { '@dojo/core/load': { id: 42, lazy: false } };
+		assert.strictEqual(source.source(), `var __modules__ = ${JSON.stringify(idMap)};\n`,
+			'Module not added to ID map.');
+	});
+
+	it('should add all `src/` modules when `mapAppModules` is true', () => {
+		const compilation = new Compilation();
+		const params = new CompilationParams();
+		const compiler = new Compiler();
+		const plugin = new LoadPlugin({ basePath: process.cwd(), mapAppModules: true });
+		const css = createModule('src/different/path/to', './module.css', 0, params);
+		const module = createModule('src/different/path/to', './module', 1, params);
+		const load = createModule('/path/to', '@dojo/core/load', 42, params);
+
+		plugin.apply(compiler);
+		compiler.mockApply('compilation', compilation, params);
+		params.normalModuleFactory.mockApply('parser', params.parser);
+		params.parser.mockApply('expression require');
+		compilation.mockApply('optimize-module-ids', [ css, module, load ]);
+
+		const source = compilation.moduleTemplate.mockApply('module', '', load)[0];
+		const idMap = {
+			'src/different/path/to/module': { id: 1, lazy: false },
+			'@dojo/core/load': { id: 42, lazy: false }
+		};
 		assert.strictEqual(source.source(), `var __modules__ = ${JSON.stringify(idMap)};\n`,
 			'Module not added to ID map.');
 	});

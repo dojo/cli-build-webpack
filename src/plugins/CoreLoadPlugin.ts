@@ -19,6 +19,12 @@ interface ModuleIdMap {
 
 /**
  * @private
+ * Regular expression that matches JS module IDs.
+ */
+const jsMidPattern = /\.(t|j)sx?$/;
+
+/**
+ * @private
  * Test whether a module was required with a relative mid and is relative to a module with a contextual require.
  *
  * @param module
@@ -113,10 +119,11 @@ export interface DojoLoadChunkNames {
  * Options for the DojoLoadPlugin
  */
 export interface DojoLoadPluginOptions {
-	detectLazyLoads?: boolean;
-	chunkNames?: DojoLoadChunkNames;
-	ignoredModules?: string[];
 	basePath?: string;
+	chunkNames?: DojoLoadChunkNames;
+	detectLazyLoads?: boolean;
+	ignoredModules?: string[];
+	mapAppModules?: boolean;
 }
 
 /**
@@ -124,15 +131,19 @@ export interface DojoLoadPluginOptions {
  * custom function that maps string module IDs to webpack's numerical module IDs.
  */
 export default class DojoLoadPlugin {
+	private _basePath: string;
 	private _detectLazyLoads: boolean;
-	private _lazyChunkNames: DojoLoadChunkNames;
 	private _ignoredModules = new Set<string>();
+	private _lazyChunkNames: DojoLoadChunkNames;
+	private _mapAppModules: boolean;
 
 	constructor(options: DojoLoadPluginOptions = {}) {
-		const { detectLazyLoads, chunkNames, ignoredModules, basePath = '' } = options;
+		const { basePath = '', chunkNames, detectLazyLoads, ignoredModules, mapAppModules = false } = options;
 
+		this._basePath = basePath;
 		this._detectLazyLoads = detectLazyLoads || false;
 		this._lazyChunkNames = chunkNames || {};
+		this._mapAppModules = mapAppModules;
 
 		if (ignoredModules) {
 			ignoredModules.forEach(moduleName => {
@@ -153,7 +164,7 @@ export default class DojoLoadPlugin {
 	 */
 	apply(compiler: Compiler) {
 		const idMap = Object.create(null) as ModuleIdMap;
-		const basePath = compiler.options.resolve.modules[0];
+		const basePath = this._basePath;
 		const bundleLoader = /bundle.*\!/;
 		const issuers: string[] = [];
 		const detectLazyLoads = this._detectLazyLoads;
@@ -315,19 +326,31 @@ export default class DojoLoadPlugin {
 			});
 
 			compilation.plugin('optimize-module-ids', (modules: NormalModule[]) => {
+				const appPath = this._basePath ? path.join(this._basePath, 'src') : 'src';
+				function mapModuleId(modulePath: string, module: NormalModule) {
+					const { rawRequest, userRequest } = module;
+					let lazy = false;
+					if (bundleLoader.test(rawRequest)) {
+						const afterLoader = userRequest.split('!')[1];
+						modulePath = stripPath(basePath, afterLoader);
+						lazy = true;
+					}
+					idMap[modulePath] = { id: module.id, lazy };
+				}
+
 				modules.forEach(module => {
 					const { rawRequest, userRequest } = module;
 
 					if (rawRequest) {
-						if (rawRequest.indexOf('@dojo') === 0 || !/^\W/.test(rawRequest)) {
-							let modulePath = rawRequest;
-							let lazy = false;
-							if (bundleLoader.test(rawRequest)) {
-								const afterLoader = userRequest.split('!')[1];
-								modulePath = stripPath(basePath, afterLoader);
-								lazy = true;
+						if (this._mapAppModules && userRequest.indexOf(appPath) === 0) {
+							if (jsMidPattern.test(userRequest)) {
+								let modulePath = userRequest.replace(`${this._basePath}/`, '').replace(jsMidPattern, '');
+								mapModuleId(modulePath, module);
 							}
-							idMap[modulePath] = { id: module.id, lazy };
+						}
+						else if (rawRequest.indexOf('@dojo') === 0 || !/^\W/.test(rawRequest)) {
+							let modulePath = rawRequest;
+							mapModuleId(modulePath, module);
 						}
 						else if (isContextual(module, issuers)) {
 							const modulePath = stripPath(basePath, userRequest);

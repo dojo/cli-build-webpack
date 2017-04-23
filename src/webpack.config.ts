@@ -131,9 +131,10 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				]);
 			}),
 			new CoreLoadPlugin({
+				basePath,
 				detectLazyLoads: !args.disableLazyWidgetDetection,
 				ignoredModules,
-				basePath
+				mapAppModules: args.withTests
 			}),
 			...includeWhen(args.element, () => {
 				return [ new webpack.optimize.CommonsChunkPlugin({
