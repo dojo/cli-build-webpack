@@ -212,7 +212,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				basePath,
 				path.join(basePath, 'node_modules')
 			],
-			extensions: ['.ts', '.js']
+			extensions: ['.ts', '.tsx', '.js']
 		},
 		resolveLoader: {
 			modules: [
@@ -237,7 +237,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				{ test: /@dojo\/.*\.js$/, enforce: 'pre', loader: 'source-map-loader-cli', options: { includeModulePaths: true } },
 				{ test: /src[\\\/].*\.ts?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=ts&instanceName=0_dojo' },
 				{ test: /src[\\\/].*\.m\.css?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=css' },
-				{ test: /src[\\\/].*\.ts?$/, use: [
+				{ test: /src[\\\/].*\.ts(x)?$/, use: [
 					'umd-compat-loader',
 					{
 						loader: 'ts-loader',
