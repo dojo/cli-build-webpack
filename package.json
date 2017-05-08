@@ -73,7 +73,7 @@
     "tslint": "^4.5.1",
     "tslint-loader": "^3.4.3",
     "typed-css-modules": "^0.2.0",
-    "typescript": "~2.2.1",
+    "typescript": "~2.3.2",
     "umd-compat-loader": "^2.0.1",
     "webpack": "^2.2.1",
     "webpack-bundle-analyzer-sunburst": "^1.2.0",

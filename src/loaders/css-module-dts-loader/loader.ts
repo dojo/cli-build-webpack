@@ -74,10 +74,11 @@ export default function (this: webpack.LoaderContext, content: string, sourceMap
 	const callback = this.async();
 	const { type = 'ts', instanceName }: LoaderArgs = getOptions(this);
 
-	(<Promise<void | void[]>> Promise.resolve()).then(() => {
+	Promise.resolve().then(() => {
+		let generationPromises: Promise<void>[] = [];
 		switch (type) {
 			case 'css':
-				return generateDTSFile(this.resourcePath);
+				generationPromises.push(generateDTSFile(this.resourcePath));
 			case 'ts':
 				const sourceFile = createSourceFile(this.resourcePath, content, ScriptTarget.Latest, true);
 				const cssFilePaths = traverseNode(sourceFile);
@@ -92,10 +93,11 @@ export default function (this: webpack.LoaderContext, content: string, sourceMap
 						}
 					}
 
-					const generationPromises = cssFilePaths.map((cssFilePath) => generateDTSFile(cssFilePath));
+					generationPromises = cssFilePaths.map((cssFilePath) => generateDTSFile(cssFilePath));
 					return Promise.all(generationPromises);
 				}
 		}
+		return Promise.all(generationPromises);
 	})
 	.then(() => callback(null, content, sourceMap));
 }
