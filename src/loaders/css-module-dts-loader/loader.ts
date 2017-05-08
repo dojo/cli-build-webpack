@@ -79,6 +79,7 @@ export default function (this: webpack.LoaderContext, content: string, sourceMap
 		switch (type) {
 			case 'css':
 				generationPromises.push(generateDTSFile(this.resourcePath));
+				break;
 			case 'ts':
 				const sourceFile = createSourceFile(this.resourcePath, content, ScriptTarget.Latest, true);
 				const cssFilePaths = traverseNode(sourceFile);
@@ -94,8 +95,8 @@ export default function (this: webpack.LoaderContext, content: string, sourceMap
 					}
 
 					generationPromises = cssFilePaths.map((cssFilePath) => generateDTSFile(cssFilePath));
-					return Promise.all(generationPromises);
 				}
+				break;
 		}
 		return Promise.all(generationPromises);
 	})
