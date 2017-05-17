@@ -163,11 +163,10 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				});
 			}),
 			...includeWhen(args.locale, args => {
-				const supportedLocales = Array.isArray(args.supportedLocales) ? args.supportedLocales : [ args.supportedLocales ];
-				const messageBundles = Array.isArray(args.messageBundles) ? args.messageBundles : [ args.messageBundles ];
+				const { locale, messageBundles, supportedLocales } = args;
 				return [
 					new I18nPlugin({
-						defaultLocale: args.locale,
+						defaultLocale: locale,
 						supportedLocales,
 						messageBundles
 					})
