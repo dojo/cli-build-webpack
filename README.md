@@ -23,25 +23,25 @@ The official dojo 2 build command.
 To use `@dojo/cli-build` in a single project, install the package:
 
 ```bash
-npm install @dojo/cli-build
+npm install @dojo/cli-build-webpack
 ```
 
 to use `@dojo/cli-build` in every project, install the project globally:
 
 ```bash
-npm install -g @dojo/cli-build
+npm install -g @dojo/cli-build-webpack
 ```
 
 ## Features
 
-`@dojo/cli-build` is an optional command for the [`@dojo/cli`](https://github.com/dojo/cli).
+`@dojo/cli-build-webpack` is an optional command for the [`@dojo/cli`](https://github.com/dojo/cli).
 
 ### Building
 
 To build a Dojo 2 application for publishing:
 
 ```bash
-dojo build
+dojo build webpack
 ```
 
 This command will output the built files to the `dist` directory.  After running this command, you can open the `dist/index.html` file to see your application.
@@ -49,13 +49,13 @@ This command will output the built files to the `dist` directory.  After running
 You can also build in watch mode, which will automatically rebuild your application when it changes:
 
 ```bash
-dojo build -w
+dojo build webpack -w
 ```
 
 `@dojo/cli-build-webpack` can be customized further. Use the help option to see everything you can do:
 
 ```bash
-dojo build --help
+dojo build webpack --help
 ```
 
 ### Building a custom element
@@ -63,7 +63,7 @@ dojo build --help
 `@dojo/cli-build-webpack` can also build custom web elements as per the [custom web v1 specification](https://www.w3.org/TR/2016/WD-custom-elements-20161013/). Custom elements are built by providing the name of a [custom element descriptor](https://github.com/dojo/widget-core#web-components).
 
 ```bash
-dojo build --element=src/path/to/createTheSpecialElement.ts
+dojo build webpack --element=src/path/to/createTheSpecialElement.ts
 ```
 
 This will output a `dist/the-special` directory containing:
@@ -76,7 +76,7 @@ This will output a `dist/the-special` directory containing:
 If the source file does not follow the pattern `create[custom element]Element`, `@dojo/cli-build-webpack` cannot determine what the name of the custom element should be. In this case, you can specify the `--elementPrefix` option to explicitly name the element.
 
 ```bash
-dojo build --element=src/path/to/element.ts --elementPrefix=the-special
+dojo build webpack --element=src/path/to/element.ts --elementPrefix=the-special
 ```
 
 ### Eject
