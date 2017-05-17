@@ -163,9 +163,10 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				});
 			}),
 			...includeWhen(args.locale, args => {
-				const { locale, messageBundles, supportedLocales } = args;
+				const { locale, messageBundles, supportedLocales, watch } = args;
 				return [
 					new I18nPlugin({
+						cacheCldrUrls: watch,
 						defaultLocale: locale,
 						supportedLocales,
 						messageBundles

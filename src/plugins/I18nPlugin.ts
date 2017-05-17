@@ -18,6 +18,14 @@ declare const require: Require;
 
 export interface DojoI18nPluginOptions {
 	/**
+	 * Indicates whether parsed CLDR URLs should be cached for application to subsequent builds. Since the parser relies on the
+	 * modules passed to it, and since the webpack dev server only rebuilds from changed modules, setting this to `true` prevents
+	 * CLDR data from being removed on subsequent builds. Defaults to false. This should only be set when building with the
+	 * `watch` flag.
+	 */
+	cacheCldrUrls?: boolean;
+
+	/**
 	 * The default locale to use as a fallback when the system locale is unsupported. Assumed to correspond to the
 	 * default messages in any message bundles.
 	 */
@@ -96,16 +104,22 @@ function isNodeModule(mid: string): boolean {
  * A webpack plugin that ensures CLDR data and locale-specific messages are available to webpack.
  */
 export default class DojoI18nPlugin {
+	private _cldrUrls: string[];
+
 	defaultLocale: string;
 	messageBundles?: string[];
 	supportedLocales?: string[];
 
 	constructor(options: DojoI18nPluginOptions) {
-		const { defaultLocale, messageBundles, supportedLocales } = options;
+		const { cacheCldrUrls, defaultLocale, messageBundles, supportedLocales } = options;
 
 		this.defaultLocale = defaultLocale;
 		this.messageBundles = messageBundles;
 		this.supportedLocales = supportedLocales;
+
+		if (cacheCldrUrls) {
+			this._cldrUrls = [];
+		}
 	}
 
 	/**
@@ -236,13 +250,18 @@ export default class DojoI18nPlugin {
 			compilation.moduleTemplate.plugin('module', (source, module: NormalModule) => {
 				if (isCldrLoadModule(module.userRequest)) {
 					const locales = this._getLocales();
-					const cldrData = containsLoad.map((path: string) => getCldrUrls(path, astMap.get(path) as Program))
+					let cldrUrls = containsLoad.map((path: string) => getCldrUrls(path, astMap.get(path) as Program))
 						.reduce(mergeUnique, [])
 						.map((url: string) => {
 							return locales.map((locale: string) => url.replace('{locale}', locale));
 						})
-						.reduce(mergeUnique, [])
-						.map((mid: string) => require(mid) as CldrData)
+						.reduce(mergeUnique, []);
+
+					if (this._cldrUrls) {
+						cldrUrls = this._cldrUrls = mergeUnique(this._cldrUrls, cldrUrls);
+					}
+
+					const cldrData = cldrUrls.map((mid: string) => require(mid) as CldrData)
 						.reduce((cldrData: CldrData, source: CldrData) => {
 							return deepAssign(cldrData, source);
 						}, Object.create(null));
