@@ -8,6 +8,7 @@ const IgnorePlugin = require('webpack/lib/IgnorePlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer-sunburst').BundleAnalyzerPlugin;
 const postcssImport = require('postcss-import');
 const postcssCssNext = require('postcss-cssnext');
@@ -120,6 +121,13 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				return new ExtractTextPlugin({ filename: `${args.elementPrefix}.css` });
 			}, () => {
 				return new ExtractTextPlugin({ filename: 'main.css', allChunks: true });
+			}),
+			...includeWhen(!args.watch && !args.withTests, (args) => {
+				return [ new OptimizeCssAssetsPlugin({
+					cssProcessorOptions: {
+						map: { inline: false }
+					}
+				}) ];
 			}),
 			includeWhen(args.element, () => {
 				return new CopyWebpackPlugin([
