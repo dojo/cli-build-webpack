@@ -207,7 +207,7 @@ const command: Command = {
 		});
 	},
 	run(helper: Helper, args: BuildArgs) {
-		const dojoRc = helper.configuration.get('build-webpack') || Object.create(null);
+		const dojoRc = helper.configuration.get() || Object.create(null);
 		const options: WebpackOptions = {
 			compress: true,
 			stats: {

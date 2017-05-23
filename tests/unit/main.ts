@@ -18,9 +18,9 @@ describe('main', () => {
 	function getMockConfiguration(config?: any) {
 		return {
 			configuration: {
-				get(name: string) {
-					if (config && name in config) {
-						return config[name];
+				get() {
+					if (config) {
+						return config['build-webpack'];
 					}
 				}
 			}
