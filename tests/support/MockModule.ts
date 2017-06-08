@@ -55,6 +55,7 @@ export default class MockModule {
 
 			if (typeof dependency === 'function') {
 				const ctor = this.sandbox.stub().returns(mock);
+				Object.assign(ctor, mock);
 				mockery.registerMock(dependencyName, ctor);
 				mock.ctor = ctor;
 			}
@@ -70,7 +71,7 @@ export default class MockModule {
 	}
 
 	getModuleUnderTest(): any {
-		mockery.enable({ warnOnUnregistered: false, useCleanCache: true });
+		this.start();
 		const allowable = require.toUrl(this.moduleUnderTestPath) + '.js';
 		mockery.registerAllowable(allowable, true);
 		return load(this.moduleUnderTestPath);
@@ -81,5 +82,9 @@ export default class MockModule {
 		this.sandbox.restore();
 		mockery.deregisterAll();
 		mockery.disable();
+	}
+
+	start() {
+		mockery.enable({ warnOnUnregistered: false, useCleanCache: true });
 	}
 }
