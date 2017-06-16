@@ -31,7 +31,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 	args = args || {};
 
 	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap' });
-	const localIdentName = args.watch ? '[name]__[local]__[hash:base64:5]' : '[hash:base64:8]';
+	const localIdentName = (args.watch || args.withTests) ? '[name]__[local]__[hash:base64:5]' : '[hash:base64:8]';
 	const cssModuleLoader = ExtractTextPlugin.extract({
 		use: [
 			'css-module-decorator-loader',
