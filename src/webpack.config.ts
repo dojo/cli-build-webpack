@@ -255,7 +255,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 					}
 				]},
 				{ test: /\.js?$/, loader: 'umd-compat-loader' },
-				{ test: /globalize(\/|$)/, loader: 'imports-loader?define=>false' },
+				{ test: new RegExp(`globalize(\\${path.sep}|$)`), loader: 'imports-loader?define=>false' },
 				...includeWhen(!args.element, () => {
 					return [
 						{ test: /\.html$/, loader: 'html-loader' }
