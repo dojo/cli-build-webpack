@@ -82,7 +82,7 @@ function mergeConfigArgs(...sources: BuildArgs[]): BuildArgs {
 	}, Object.create(null));
 }
 
-function watch(config: webpack.Config, options: WebpackOptions, args: BuildArgs): Promise<any> {
+function watch(config: webpack.Config, options: WebpackOptions, args: BuildArgs) {
 	config.devtool = 'inline-source-map';
 
 	config.entry = (function (entry) {
@@ -115,7 +115,7 @@ function watch(config: webpack.Config, options: WebpackOptions, args: BuildArgs)
 	});
 }
 
-function compile(config: webpack.Config, options: WebpackOptions): Promise<any> {
+function compile(config: webpack.Config, options: WebpackOptions) {
 	const compiler = webpack(config);
 	return new Promise((resolve, reject) => {
 		compiler.run((err, stats) => {
@@ -206,7 +206,7 @@ const command: Command = {
 			type: 'boolean'
 		});
 	},
-	run(helper: Helper, args: BuildArgs) {
+	run(helper: Helper, args: BuildArgs): Promise<void> {
 		const dojoRc = helper.configuration.get() || Object.create(null);
 		const options: WebpackOptions = {
 			compress: true,
@@ -218,10 +218,10 @@ const command: Command = {
 		const configArgs = getConfigArgs(mergeConfigArgs(dojoRc as BuildArgs, args));
 
 		if (args.watch) {
-			return watch(config(configArgs), options, args);
+			return watch(config(configArgs), options, args) as Promise<void>;
 		}
 		else {
-			return compile(config(configArgs), options);
+			return compile(config(configArgs), options) as Promise<void>;
 		}
 	},
 	eject(helper: Helper) {

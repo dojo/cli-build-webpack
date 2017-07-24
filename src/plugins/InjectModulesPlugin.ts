@@ -6,6 +6,7 @@ import Compiler = require('webpack/lib/Compiler');
 import Compilation = require('webpack/lib/Compilation');
 import { getBasePath, isRelative } from './util/main';
 import Map from '@dojo/shim/Map';
+import Promise from '@dojo/shim/Promise';
 const basePath = path.join(process.cwd(), 'node_modules');
 
 export interface InjectModulesPluginOptions {

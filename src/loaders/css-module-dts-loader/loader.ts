@@ -3,6 +3,7 @@ import { createSourceFile, forEachChild, Node, ScriptTarget, SyntaxKind } from '
 import { statSync } from 'fs';
 import { dirname, resolve } from 'path';
 import Map from '@dojo/shim/Map';
+import Promise from '@dojo/shim/Promise';
 const DtsCreator = require('typed-css-modules');
 const { getOptions } = require('loader-utils');
 const instances = require('ts-loader/dist/instances');
