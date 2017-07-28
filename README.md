@@ -1,7 +1,7 @@
-# @dojo/cli-build
+# @dojo/cli-build-webpack
 
-[![Build Status](https://travis-ci.org/dojo/cli-build.svg?branch=master)](https://travis-ci.org/dojo/cli-build)
-[![codecov](https://codecov.io/gh/dojo/cli-build/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/cli-build)
+[![Build Status](https://travis-ci.org/dojo/cli-build.svg?branch=master)](https://travis-ci.org/dojo/cli-build-webpack)
+[![codecov](https://codecov.io/gh/dojo/cli-build/branch/master/graph/badge.svg)](https://codecov.io/gh/dojo/cli-build-webpack)
 [![npm version](https://badge.fury.io/js/%40dojo%2Fcli-build-webpack.svg)](https://badge.fury.io/js/%40dojo%2Fcli-build-webpack)
 
 The official dojo 2 build command.
@@ -26,7 +26,7 @@ To use `@dojo/cli-build` in a single project, install the package:
 npm install @dojo/cli-build-webpack
 ```
 
-to use `@dojo/cli-build` in every project, install the project globally:
+to use `@dojo/cli-build-webpack` in every project, install the project globally:
 
 ```bash
 npm install -g @dojo/cli-build-webpack
