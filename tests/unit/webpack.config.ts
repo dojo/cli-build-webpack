@@ -40,7 +40,7 @@ function start(cli = true) {
 		__dirname: dirname
 	});
 
-	const js = configString.toString('utf8').replace(/\$\{packagePath\}/g, dirname);
+	const js = configString.toString('utf8').replace(/\$\{packagePath\}/g, dirname.replace(/\\/g, '/').replace(/^[cC]:/, ''));
 	runInContext(js, context);
 
 	if (cli) {

@@ -3,6 +3,7 @@ import { Require } from '@dojo/interfaces/loader';
 import { Program } from 'estree';
 import { describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
+import * as path from 'path';
 import getCldrUrls, { getLoadCallUrls, getLoadImports } from '../../../../src/plugins/util/i18n';
 
 declare const require: Require;
@@ -59,7 +60,7 @@ describe('plugins/util/i18n', () => {
 		it('should resolve relative urls', () => {
 			return loadAst(false).then((ast) => {
 				assert.sameMembers(getCldrUrls('/parent/context/mid.ts', ast), [
-					'/parent/path/to/cldr/data.json'
+					path.resolve('/parent/path/to/cldr/data.json')
 				]);
 			});
 		});

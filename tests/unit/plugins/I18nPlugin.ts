@@ -2,6 +2,7 @@ import coreLoad from '@dojo/core/load';
 import { Require } from '@dojo/interfaces/loader';
 import { Program } from 'estree';
 import { afterEach, describe, it } from 'intern!bdd';
+import { sep as separator } from 'path';
 import * as assert from 'intern/chai!assert';
 import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 import Compilation = require('../../support/webpack/Compilation');
@@ -316,7 +317,10 @@ describe('i18n', () => {
 			const main = messagePlugins[0];
 
 			assert.strictEqual(main.options.resourcePattern.toString(), new RegExp('tests/support/mocks/nls/main').toString());
-			assert.sameMembers(main.options.moduleIds, locales.map((locale: string) => `tests/support/mocks/nls/${locale}/main`));
+			assert.sameMembers(
+				main.options.moduleIds,
+				locales.map((locale: string) => `tests/support/mocks/nls/${locale}/main`.replace(/\//g, separator))
+			);
 		});
 
 		it('should ignore non-existent bundles', () => {
@@ -346,7 +350,10 @@ describe('i18n', () => {
 			const main = messagePlugins[0];
 
 			assert.strictEqual(main.options.resourcePattern.toString(), new RegExp('tests/support/mocks/nls/main.ts').toString());
-			assert.sameMembers(main.options.moduleIds, locales.map((locale: string) => `tests/support/mocks/nls/${locale}/main.ts`));
+			assert.sameMembers(
+				main.options.moduleIds,
+				locales.map((locale: string) => `tests/support/mocks/nls/${locale}/main.ts`.replace(/\//g, separator))
+			);
 		});
 	});
 });
