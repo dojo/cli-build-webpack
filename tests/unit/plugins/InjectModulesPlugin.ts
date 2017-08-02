@@ -375,9 +375,14 @@ describe('inject-modules', () => {
 
 			return new Promise((resolve, reject) => {
 				resolver({ resource: '/test/module.js' }, () => {
-					resolve();
-					assert.isTrue((<any> plugin.resolve).called);
-					assert.isTrue((<any> plugin.createModules).calledWith([ { context: '/test', request: './module' } ]));
+					try {
+						assert.isTrue((<any> plugin.resolve).called);
+						assert.isTrue((<any> plugin.createModules).calledWith([ { contextInfo: {}, context: '/test', request: './module' } ]));
+						resolve();
+					}
+					catch (error) {
+						reject(error);
+					}
 				});
 			});
 		});
@@ -392,8 +397,13 @@ describe('inject-modules', () => {
 					(<any> plugin.resolve).restore();
 					sinon.spy(plugin, 'resolve');
 					resolver({ resource: '/test/module.js' }, () => {
-						resolve();
-						assert.isFalse((<any> plugin.resolve).called);
+						try {
+							assert.isFalse((<any> plugin.resolve).called);
+							resolve();
+						}
+						catch (error) {
+							reject(error);
+						}
 					});
 				});
 			});
@@ -406,10 +416,15 @@ describe('inject-modules', () => {
 
 			return new Promise((resolve, reject) => {
 				resolver({ resource: '/test/module.js' }, (error: Error) => {
-					resolve();
-					assert.strictEqual(error.message, 'mock error');
-					assert.isTrue((<any> plugin.resolve).called);
-					assert.isFalse((<any> plugin.createModules).called);
+					try {
+						assert.strictEqual(error.message, 'mock error');
+						assert.isTrue((<any> plugin.resolve).called);
+						assert.isFalse((<any> plugin.createModules).called);
+						resolve();
+					}
+					catch (error) {
+						reject(error);
+					}
 				});
 			});
 		});
