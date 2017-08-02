@@ -79,6 +79,9 @@ export default class MockModule {
 
 	destroy(): void {
 		unload(this.moduleUnderTestPath);
+		for (let mock in this.mocks) {
+			unload(resolvePath(this.basePath, mock));
+		}
 		this.sandbox.restore();
 		mockery.deregisterAll();
 		mockery.disable();

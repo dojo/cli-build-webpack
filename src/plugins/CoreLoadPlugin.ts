@@ -58,7 +58,7 @@ function isContextual(module: NormalModule, issuers: string[]): boolean {
  * The updated path.
  */
 function stripPath(basePath: string, path: string): string {
-	let resolved = path.replace(basePath + '/', '').replace(/\..*$/, '');
+	let resolved = (basePath ? path.replace(basePath + '/', '') : path).replace(/\..*$/, '');
 
 	if (path.indexOf(basePath) === 0) {
 		resolved = resolved.replace('node_modules/', '');

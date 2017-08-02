@@ -14,6 +14,7 @@ The official dojo 2 build command.
   - [Building](#building)
   - [Building a custom element](#building-a-custom-element)
   - [Eject](#eject)
+  - [3rd party library integration](#interop-with-external-libraries)
 - [How to I contribute?](#how-do-i-contribute)
   - [Installation](#installation)
   - [Testing](#testing)
@@ -87,6 +88,45 @@ Ejecting `@dojo/cli-build-webpack` will produce a `config/build-webpack/webpack.
 ```bash
 node_modules/.bin/webpack --config=config/build-webpack/webpack.config.js
 ```
+
+### Interop with external libraries
+
+External libraries that cannot be loaded normally via webpack can be included in a Dojo 2 application by providing an implementation of `require` or `define`, and some
+configuration in the project's `.dojorc` file.
+`.dojorc` is a JSON file that contains configuration for Dojo 2 CLI tasks. Configuration for the `dojo build` task can be provided under the
+`build-webpack` property.
+Configuration for external dependencies can be provided under the `externals` property of the `build-webpack` config.
+
+`externals` is an object, with two allowed properties.
+
+ `outputPath`: An optional property specifying an output path to which files should be copied.
+
+ `dependencies`: A required array that defines which modules should be loaded via the external loader, and what files should be included in the build. Each entry can be one of two types:
+* A string. In this case the entry simply indicates that this path, and any children of this path, should be loaded via the external loader
+* An object that provides additional configuration for dependencies that need to be copied into the built application. This object has the following properties:
+
+ | Property | Type | optional | Description |
+ | -------- | ---- | -------- | ----------- |
+ | `from` | `string` | `false`  | A path relative to `node_modules` specifying the dependency location to copy into the build application. |
+ | `to` | `string` | `true` | A path that replaces `from` as the location to copy this dependency to. By default, dependencies will be copied to `${externalsOutputPath}/${to}` or `${externalsOutputPath}/${from}` if `to` is not specified. |
+ | `name` | `string` | `true` | Indicates that this path, and any children of this path, should be loaded via the external loader |
+ | `inject` | `string, string[], or boolean` | `true` | This property indicates that this dependency defines, or includes, scripts or stylesheets that should be loaded on the page. If `inject` is set to `true`, then the file at the location specified by `to` or `from` will be loaded on the page. If this dependency is a folder, then `inject` can be set to a string or array of strings to define one or more files to inject. Each path in `inject` should be relative to `${externalsOutputPath}/${to}` or `${externalsOutputPath}/${from}` depending on whether `to` was provided. |
+
+ As an example the following configuration will inject `src/legacy/layer.js` into the application page, declare that modules `a`, `b`, and `c` are external
+ and should be delegated to the external layer, and then copy the folder `node_modules/legacy-dep`, from which several files are injected. All of these files will be copied into the `externals` folder, which could be overridden by specifying the `outputPath` property in the `externals` configuration.
+ ```
+ "externals": {
+    "dependencies": [
+        "a",
+        "b",
+        "c",
+        { "from": "src/legacy/layer.js", "inject": true },
+        { "from": "node_modules/legacy-dep", "inject": [ "modulA/layer.js", "moduleA/layer.css", "moduleB/layer.js" ] }
+    ]
+ }
+```
+
+Types for any dependencies included in `externals` can be installed in `node_modules/@types`, like any other dependency.
 
 ## How do I contribute?
 

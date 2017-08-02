@@ -6,9 +6,11 @@ class MockCompilation extends Pluginable {
 	options: any;
 	modules: any[];
 	moduleTemplate: Pluginable;
+	mainTemplate: Pluginable;
 	// Non-standard property used only for testing
 	params: CompilationParams;
 	resolvers: any[];
+	applied: any[];
 
 	constructor(options?: any) {
 		super();
@@ -21,10 +23,15 @@ class MockCompilation extends Pluginable {
 				modules: [ '/root/path' ]
 			}
 		};
+		this.applied = [];
 	}
 
 	addModule(module: any) {
 		this.modules.push(module);
+	}
+
+	apply(...args: any[]) {
+		this.applied = this.applied.concat(args);
 	}
 
 	buildModule(module: any, optional: boolean, origin: any, dependencies: any[], callback: Function) {

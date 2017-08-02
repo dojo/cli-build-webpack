@@ -8,6 +8,7 @@ const IgnorePlugin = require('webpack/lib/IgnorePlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const AutoRequireWebpackPlugin = require('auto-require-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer-sunburst').BundleAnalyzerPlugin;
 const postcssImport = require('postcss-import');
@@ -16,6 +17,7 @@ const postcssCssNext = require('postcss-cssnext');
 const isCLI = process.env.DOJO_CLI;
 const packagePath = isCLI ? '.' : '@dojo/cli-build-webpack';
 const CoreLoadPlugin = require(`${packagePath}/plugins/CoreLoadPlugin`).default;
+const ExternalLoaderPlugin = require(`${packagePath}/plugins/ExternalLoaderPlugin`).default;
 const I18nPlugin = require(`${packagePath}/plugins/I18nPlugin`).default;
 const basePath = process.cwd();
 
@@ -30,12 +32,14 @@ type IncludeCallback = (args: BuildArgs) => any;
 function webpackConfig(args: Partial<BuildArgs>) {
 	args = args || {};
 
-	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap' });
+	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap!resolve-url-loader' });
 	const localIdentName = (args.watch || args.withTests) ? '[name]__[local]__[hash:base64:5]' : '[hash:base64:8]';
+	const externalDependencies = args.externals && args.externals.dependencies;
+	const includesExternals = Boolean(externalDependencies && externalDependencies.length);
 	const cssModuleLoader = ExtractTextPlugin.extract({
 		use: [
 			'css-module-decorator-loader',
-			`css-loader?modules&sourceMap&importLoaders=1&localIdentName=${localIdentName}`,
+			`css-loader?modules&sourceMap&importLoaders=1&localIdentName=${localIdentName}!resolve-url-loader`,
 			{
 				loader: 'postcss-loader?sourceMap',
 				options: {
@@ -73,9 +77,21 @@ function webpackConfig(args: Partial<BuildArgs>) {
 	const config: webpack.Config = {
 		externals: [
 			function (context, request, callback) {
-				if (/^intern[!\/]/.test(request)) {
-					return callback(null, 'amd ' + request);
+				const externals = externalDependencies || [];
+				function findExternalType(externals: (string | { name?: string; type?: string; })[]): string | void {
+					for (let external of externals) {
+						const name = external && (typeof external === 'string' ? external : external.name);
+						if (name && new RegExp(`^${name}[!\/]`).test(request)) {
+							return (typeof external === 'string' ? '' : external.type) || 'amd';
+						}
+					}
 				}
+
+				const type = findExternalType(externals.concat('intern'));
+				if (type) {
+					return callback(null, `${type} ${request}`);
+				}
+
 				callback();
 			}
 		],
@@ -103,6 +119,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 			};
 		}),
 		plugins: [
+			new AutoRequireWebpackPlugin(/src\/main/),
 			new webpack.BannerPlugin(readFileSync(require.resolve(`${packagePath}/banner.md`), 'utf8')),
 			new IgnorePlugin(/request\/providers\/node/),
 			new NormalModuleReplacementPlugin(/\.m.css$/, result => {
@@ -144,13 +161,13 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				ignoredModules,
 				mapAppModules: args.withTests
 			}),
-			...includeWhen(args.element, () => {
-				return [ new webpack.optimize.CommonsChunkPlugin({
+			...includeWhen(args.element, () => [
+				new webpack.optimize.CommonsChunkPlugin({
 					name: 'widget-core',
 					filename: 'widget-core.js'
-				}) ];
-			}),
-			...includeWhen(!args.watch && !args.withTests, (args) => {
+				})
+			]),
+			...includeWhen(!args.watch && !args.withTests, () => {
 				return [ new webpack.optimize.UglifyJsPlugin({
 					sourceMap: true,
 					compress: { warnings: false },
@@ -202,10 +219,20 @@ function webpackConfig(args: Partial<BuildArgs>) {
 						filename: '../_build/src/index.html'
 					})
 				];
-			})
+			}),
+			...includeWhen(includesExternals, () => [
+				new ExternalLoaderPlugin({
+					dependencies: externalDependencies,
+					outputPath: args.externals && args.externals.outputPath,
+					pathPrefix: args.withTests ? '../_build/src' : ''
+				})
+			])
+
 		],
 		output: {
 			libraryTarget: 'umd',
+			library: '[name]',
+			umdNamedDefine: true,
 			path: includeWhen(args.element, args => {
 				return path.resolve(`./dist/${args.elementPrefix}`);
 			}, () => {

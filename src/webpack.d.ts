@@ -499,6 +499,7 @@ declare module 'webpack/lib/Dependency' {
 
 declare module 'webpack/lib/MainTemplate' {
 	class MainTemplate {
+		plugin(name: string, fn: Function): void;
 	}
 	export = MainTemplate;
 }
