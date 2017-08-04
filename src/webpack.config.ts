@@ -118,6 +118,12 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				})
 			};
 		}),
+		node: {
+			dgram: 'empty',
+			net: 'empty',
+			tls: 'empty',
+			fs: 'empty'
+		},
 		plugins: [
 			new AutoRequireWebpackPlugin(/src\/main/),
 			new webpack.BannerPlugin(readFileSync(require.resolve(`${packagePath}/banner.md`), 'utf8')),
