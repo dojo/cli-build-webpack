@@ -28,6 +28,7 @@ const tsContentWithMultipleCss = `
 const tsContentWithoutCss = `
 	import thing from 'place';
 	import this from 'that';
+	import other from 'somemoduleendingwithcss';
 `;
 
 describe('css-module-dts-loader', () => {

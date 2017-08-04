@@ -47,7 +47,7 @@ function generateDTSFile(filePath: string): Promise<void> {
 function getCssImport(node: Node): string | void {
 	if (node.kind === SyntaxKind.StringLiteral) {
 		const importPath = node.getText().replace(/\'|\"/g, '');
-		if (/.css$/.test(importPath)) {
+		if (/\.css$/.test(importPath)) {
 			const parentFileName = node.getSourceFile().fileName;
 			return resolve(dirname(parentFileName), importPath);
 		}
