@@ -387,6 +387,7 @@ declare module 'webpack/lib/Compiler' {
 
 	class Compiler extends Tapable {
 		options: any;
+		watchFileSystem: any;
 
 		run(callback: Compiler.Callback): void;
 		runAsChild(callback: Compiler.Callback): void;
@@ -405,6 +406,7 @@ declare module 'webpack/lib/Compiler' {
 		plugin(name: 'compile', fn: (this: Compiler, params: any) => void): void;
 		plugin(name: 'make', fn: (this: Compiler, compilation: Compilation) => void): void;
 		plugin(name: 'after-compile', fn: (this: Compiler, compilation: Compilation) => void): void;
+		plugin(name: 'after-environment', fn: (this: Compiler) => void): void;
 	}
 
 	namespace Compiler {

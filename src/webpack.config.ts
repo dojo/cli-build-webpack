@@ -19,6 +19,7 @@ const packagePath = isCLI ? '.' : '@dojo/cli-build-webpack';
 const CoreLoadPlugin = require(`${packagePath}/plugins/CoreLoadPlugin`).default;
 const ExternalLoaderPlugin = require(`${packagePath}/plugins/ExternalLoaderPlugin`).default;
 const I18nPlugin = require(`${packagePath}/plugins/I18nPlugin`).default;
+const IgnoreUnmodifiedPlugin = require(`${packagePath}/plugins/IgnoreUnmodifiedPlugin`).default;
 const basePath = process.cwd();
 
 let tslintExists = false;
@@ -140,6 +141,9 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				}
 			}),
 			new webpack.ContextReplacementPlugin(/dojo-app[\\\/]lib/, { test: () => false }),
+			...includeWhen(args.watch, () => {
+				return [ new IgnoreUnmodifiedPlugin() ];
+			}),
 			includeWhen(args.element, args => {
 				return new ExtractTextPlugin({ filename: `${args.elementPrefix}.css` });
 			}, () => {

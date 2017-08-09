@@ -7,6 +7,7 @@ import MockCompilationParams = require('./CompilationParams');
 class MockCompiler extends Pluginable {
 	applied: any[];
 	options: any;
+	watchFileSystem: any;
 
 	constructor(options?: any) {
 		super();
@@ -16,6 +17,7 @@ class MockCompiler extends Pluginable {
 				modules: [ '/root/path' ]
 			}
 		};
+		this.watchFileSystem = {};
 	}
 
 	apply(...args: any[]) {
