@@ -11,8 +11,6 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const AutoRequireWebpackPlugin = require('auto-require-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer-sunburst').BundleAnalyzerPlugin;
-const postcssImport = require('postcss-import');
-const postcssCssNext = require('postcss-cssnext');
 
 const isCLI = process.env.DOJO_CLI;
 const packagePath = isCLI ? '.' : '@dojo/cli-build-webpack';
@@ -44,16 +42,9 @@ function webpackConfig(args: Partial<BuildArgs>) {
 			{
 				loader: 'postcss-loader?sourceMap',
 				options: {
-					plugins: [
-						postcssImport,
-						postcssCssNext({
-							features: {
-								autoprefixer: {
-									browsers: [ 'last 2 versions', 'ie >= 10' ]
-								}
-							}
-						})
-					]
+					config: {
+						path: path.join(__dirname, 'postcss.config.js')
+					}
 				}
 			}
 		]

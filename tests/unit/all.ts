@@ -1,5 +1,6 @@
 import './main';
 import './webpack.config';
+import './postcss.config';
 import './plugins/CoreLoadPlugin';
 import './plugins/ExternalLoaderPlugin';
 import './plugins/I18nPlugin';
