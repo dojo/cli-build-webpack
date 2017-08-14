@@ -15,7 +15,7 @@ The official dojo 2 build command.
   - [Building a custom element](#building-a-custom-element)
   - [Eject](#eject)
   - [3rd party library integration](#interop-with-external-libraries)
-- [How to I contribute?](#how-do-i-contribute)
+- [How do I contribute?](#how-do-i-contribute)
   - [Installation](#installation)
   - [Testing](#testing)
 - [Licensing information](#licensing-information)
