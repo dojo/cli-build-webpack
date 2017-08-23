@@ -20,6 +20,9 @@ const I18nPlugin = require(`${packagePath}/plugins/I18nPlugin`).default;
 const IgnoreUnmodifiedPlugin = require(`${packagePath}/plugins/IgnoreUnmodifiedPlugin`).default;
 const basePath = process.cwd();
 
+const packageJsonPath = path.join(basePath, 'package.json');
+const packageJson = existsSync(packageJsonPath) ? require(packageJsonPath) : undefined;
+
 let tslintExists = false;
 try {
 	require(path.join(basePath, 'tslint'));
@@ -27,6 +30,14 @@ try {
 } catch (ignore) { }
 
 type IncludeCallback = (args: BuildArgs) => any;
+
+function getJsonpFunction(name?: string) {
+	let jsonpFunction = 'dojoWebpackJsonp';
+	if (name) {
+		jsonpFunction += '_' + name.replace(/[^a-z0-9_]/g, ' ').trim().replace(/\s+/g, '_');
+	}
+	return jsonpFunction;
+}
 
 function webpackConfig(args: Partial<BuildArgs>) {
 	args = args || {};
@@ -233,6 +244,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 		output: {
 			libraryTarget: 'umd',
 			library: '[name]',
+			jsonpFunction: getJsonpFunction(packageJson && packageJson.name),
 			umdNamedDefine: true,
 			path: includeWhen(args.element, args => {
 				return path.resolve(`./dist/${args.elementPrefix}`);

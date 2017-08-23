@@ -26,6 +26,8 @@ function getBasePath(modulePath: string): string {
 	return chunks.join('/');
 }
 
+export type MockDependency = string | { name: string; mock: any };
+
 export default class MockModule {
 	private basePath: string;
 	private moduleUnderTestPath: string;
@@ -39,30 +41,37 @@ export default class MockModule {
 		this.mocks = {};
 	}
 
-	dependencies(dependencies: string[]): void {
-		dependencies.forEach((dependencyName) => {
-			let dependency = load(resolvePath(this.basePath, dependencyName));
-			const mock: any = {};
+	dependencies(dependencies: MockDependency[]): void {
+		dependencies.forEach((dependency) => {
+			if (typeof dependency === 'string') {
+				let module = load(resolvePath(this.basePath, dependency));
+				const mock: any = {};
 
-			for (let prop in dependency) {
-				if (typeof dependency[prop] === 'function') {
-					mock[prop] = function () {};
-					this.sandbox.stub(mock, prop);
-				} else {
-					mock[prop] = dependency[prop];
+				for (let prop in module) {
+					if (typeof module[prop] === 'function') {
+						mock[prop] = function () {};
+						this.sandbox.stub(mock, prop);
+					} else {
+						mock[prop] = module[prop];
+					}
 				}
-			}
 
-			if (typeof dependency === 'function') {
-				const ctor = this.sandbox.stub().returns(mock);
-				Object.assign(ctor, mock);
-				mockery.registerMock(dependencyName, ctor);
-				mock.ctor = ctor;
+				if (typeof module === 'function') {
+					const ctor = this.sandbox.stub().returns(mock);
+					Object.assign(ctor, mock);
+					mockery.registerMock(dependency, ctor);
+					mock.ctor = ctor;
+				}
+				else {
+					mockery.registerMock(dependency, mock);
+				}
+				this.mocks[dependency] = mock;
 			}
 			else {
-				mockery.registerMock(dependencyName, mock);
+				const { name, mock } = dependency;
+				mockery.registerMock(name, mock);
+				this.mocks[name] = mock;
 			}
-			this.mocks[dependencyName] = mock;
 		});
 	}
 

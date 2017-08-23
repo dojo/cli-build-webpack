@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, it } from 'intern!bdd';
 import * as assert from 'intern/chai!assert';
 import { resolve } from 'path';
 import { createContext, runInContext } from 'vm';
+import { Config } from 'webpack';
 import MockModule from '../support/MockModule';
 
 const basePath = process.cwd();
@@ -10,8 +11,16 @@ const configPath = resolve(basePath, '_build/src/webpack.config.js');
 const configString = readFileSync(configPath);
 const dirname = resolve(basePath, '_build/src');
 let mockModule: MockModule;
+let config: Config;
 
 function start(cli = true) {
+	const mockPackageJson = {
+		name: resolve(basePath, 'package.json'),
+		mock: {
+			name: '@namespace/complex$-package-name'
+		}
+	};
+
 	mockModule = new MockModule('../../src/webpack.config');
 	mockModule.dependencies([
 		'./plugins/CoreLoadPlugin',
@@ -25,7 +34,8 @@ function start(cli = true) {
 		'postcss-import',
 		'webpack-bundle-analyzer-sunburst',
 		'webpack/lib/IgnorePlugin',
-		'webpack'
+		'webpack',
+		mockPackageJson
 	]);
 	mockModule.start();
 
@@ -43,10 +53,7 @@ function start(cli = true) {
 
 	const js = configString.toString('utf8').replace(/\$\{packagePath\}/g, dirname.replace(/\\/g, '/').replace(/^[cC]:/, ''));
 	runInContext(js, context);
-
-	if (cli) {
-		context.module.exports({});
-	}
+	config = cli ? context.module.exports({}) : context.module.exports;
 }
 
 describe('webpack.config.ts', () => {
@@ -61,6 +68,10 @@ describe('webpack.config.ts', () => {
 
 			const webpack = mockModule.getMock('webpack');
 			assert.isTrue(webpack.BannerPlugin.calledWith(expected));
+		});
+
+		it('set the jsonFunction from the package name', () => {
+			assert.strictEqual(config.output.jsonpFunction, 'dojoWebpackJsonp_namespace_complex_package_name');
 		});
 	}
 
