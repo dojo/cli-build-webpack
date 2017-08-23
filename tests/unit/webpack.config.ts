@@ -5,6 +5,7 @@ import { resolve } from 'path';
 import { createContext, runInContext } from 'vm';
 import { Config } from 'webpack';
 import MockModule from '../support/MockModule';
+import { BuildArgs } from '../../src/main';
 
 const basePath = process.cwd();
 const configPath = resolve(basePath, '_build/src/webpack.config.js');
@@ -13,7 +14,7 @@ const dirname = resolve(basePath, '_build/src');
 let mockModule: MockModule;
 let config: Config;
 
-function start(cli = true) {
+function start(cli = true, args: Partial<BuildArgs> = {}) {
 	const mockPackageJson = {
 		name: resolve(basePath, 'package.json'),
 		mock: {
@@ -53,7 +54,7 @@ function start(cli = true) {
 
 	const js = configString.toString('utf8').replace(/\$\{packagePath\}/g, dirname.replace(/\\/g, '/').replace(/^[cC]:/, ''));
 	runInContext(js, context);
-	config = cli ? context.module.exports({}) : context.module.exports;
+	config = cli ? context.module.exports(args) : context.module.exports;
 }
 
 describe('webpack.config.ts', () => {
@@ -69,9 +70,21 @@ describe('webpack.config.ts', () => {
 			const webpack = mockModule.getMock('webpack');
 			assert.isTrue(webpack.BannerPlugin.calledWith(expected));
 		});
+	}
 
-		it('set the jsonFunction from the package name', () => {
-			assert.strictEqual(config.output.jsonpFunction, 'dojoWebpackJsonp_namespace_complex_package_name');
+	function runAppTests() {
+		runTests();
+
+		it('should output a UMD module to dist/', () => {
+			assert.deepEqual(config.output, {
+				chunkFilename: '[name].js',
+				filename: '[name].js',
+				jsonpFunction: 'dojoWebpackJsonp_namespace_complex_package_name',
+				library: '[name]',
+				libraryTarget: 'umd',
+				path: resolve(basePath, './dist'),
+				umdNamedDefine: true
+			});
 		});
 	}
 
@@ -80,7 +93,7 @@ describe('webpack.config.ts', () => {
 			start();
 		});
 
-		runTests();
+		runAppTests();
 	});
 
 	describe('ejected', () => {
@@ -88,6 +101,27 @@ describe('webpack.config.ts', () => {
 			start(false);
 		});
 
+		runAppTests();
+	});
+
+	describe('custom elements', () => {
+		beforeEach(() => {
+			start(true, {
+				element: 'src/createCustomElement.ts',
+				elementPrefix: 'prefix'
+			});
+		});
+
 		runTests();
+
+		it('should output with a jsonp wrapper to dist/{prefix}', () => {
+			assert.deepEqual(config.output, {
+				chunkFilename: '[name].js',
+				filename: '[name].js',
+				jsonpFunction: 'dojoWebpackJsonp_namespace_complex_package_name',
+				libraryTarget: 'jsonp',
+				path: resolve(basePath, './dist/prefix')
+			});
+		});
 	});
 });

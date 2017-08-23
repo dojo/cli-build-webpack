@@ -77,6 +77,14 @@ function webpackConfig(args: Partial<BuildArgs>) {
 		});
 	}
 
+	const outputConfig: webpack.Output = {
+		chunkFilename: '[name].js',
+		filename: '[name].js',
+		jsonpFunction: getJsonpFunction(packageJson && packageJson.name),
+		libraryTarget: 'umd',
+		path: path.resolve('./dist')
+	};
+
 	const config: webpack.Config = {
 		externals: [
 			function (context, request, callback) {
@@ -241,19 +249,17 @@ function webpackConfig(args: Partial<BuildArgs>) {
 			])
 
 		],
-		output: {
-			libraryTarget: 'umd',
-			library: '[name]',
-			jsonpFunction: getJsonpFunction(packageJson && packageJson.name),
-			umdNamedDefine: true,
-			path: includeWhen(args.element, args => {
-				return path.resolve(`./dist/${args.elementPrefix}`);
-			}, () => {
-				return path.resolve('./dist');
-			}),
-			filename: '[name].js',
-			chunkFilename: '[name].js'
-		},
+		output: includeWhen(args.element, args => {
+			return Object.assign(outputConfig, {
+				libraryTarget: 'jsonp',
+				path: path.resolve(`./dist/${args.elementPrefix}`)
+			});
+		}, () => {
+			return Object.assign(outputConfig, {
+				library: '[name]',
+				umdNamedDefine: true
+			});
+		}),
 		devtool: 'source-map',
 		resolve: {
 			modules: [
