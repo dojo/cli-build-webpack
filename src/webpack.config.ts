@@ -42,14 +42,14 @@ function getJsonpFunction(name?: string) {
 function webpackConfig(args: Partial<BuildArgs>) {
 	args = args || {};
 
-	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap!resolve-url-loader' });
+	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap' });
 	const localIdentName = (args.watch || args.withTests) ? '[name]__[local]__[hash:base64:5]' : '[hash:base64:8]';
 	const externalDependencies = args.externals && args.externals.dependencies;
 	const includesExternals = Boolean(externalDependencies && externalDependencies.length);
 	const cssModuleLoader = ExtractTextPlugin.extract({
 		use: [
 			'css-module-decorator-loader',
-			`css-loader?modules&sourceMap&importLoaders=1&localIdentName=${localIdentName}!resolve-url-loader`,
+			`css-loader?modules&sourceMap&importLoaders=1&localIdentName=${localIdentName}`,
 			{
 				loader: 'postcss-loader?sourceMap',
 				options: {

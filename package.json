@@ -69,7 +69,6 @@
     "postcss-cssnext": "2.11.0",
     "postcss-import": "10.0.0",
     "postcss-loader": "2.0.6",
-    "resolve-url-loader": "2.1.0",
     "source-map-loader-cli": "0.0.1",
     "style-loader": "0.13.2",
     "ts-loader": "2.3.1",
