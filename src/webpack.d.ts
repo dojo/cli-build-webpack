@@ -253,6 +253,45 @@ declare module 'webpack/lib/webpack' {
 	export = webpack;
 }
 
+declare module 'webpack/lib/dependencies/ConstDependency' {
+	import NullDependency = require('webpack/lib/dependencies/NullDependency');
+
+	class ConstDependencyTemplate {
+		apply(dep: any, source: any): void;
+	}
+
+	class ConstDependency extends NullDependency {
+		constructor(expression?: any, range?: [number, number]);
+
+		public expression?: any;
+		public loc?: any;
+		public range?: [number, number];
+
+		updateHash(hash: any): void;
+
+		static Template: typeof ConstDependencyTemplate;
+	}
+
+	export = ConstDependency;
+}
+
+declare module 'webpack/lib/dependencies/NullDependency' {
+	import Dependency = require('webpack/lib/Dependency');
+
+	class NullDependencyTemplate {
+		apply(dep: any, source: any): void;
+	}
+
+	class NullDependency extends Dependency {
+		readonly type: string;
+		isEqualResource(): boolean;
+		updateHash(hash: any): void;
+		static Template: typeof NullDependencyTemplate;
+	}
+
+	export = NullDependency;
+}
+
 declare module 'webpack/lib/BannerPlugin' {
 	import webpack = require('webpack');
 
@@ -328,8 +367,11 @@ declare module 'webpack/lib/Compilation' {
 	import Source = require('webpack-sources/lib/Source');
 	import ModuleTemplate = require('webpack/lib/ModuleTemplate');
 	import Compiler = require('webpack/lib/Compiler');
+	import Dependency = require('webpack/lib/Dependency');
 
 	class Compilation extends Tapable {
+		dependencyFactories: Map<typeof Dependency, any>;
+		dependencyTemplates: Map<typeof Dependency, any>;
 		mainTemplate: MainTemplate;
 		moduleTemplate: ModuleTemplate;
 
@@ -395,6 +437,7 @@ declare module 'webpack/lib/Compiler' {
 
 		plugin(name: 'watch-run', fn: (this: Compiler, compiler: Compiler) => void): void;
 		plugin(name: 'done', fn: (this: Compiler, stats: any) => void): void;
+		plugin(name: 'emit', fn: (this: Compiler, compilation: Compilation, callback: () => void) => void): void;
 		plugin(name: 'falied', fn: (this: Compiler, error: Error) => void): void;
 		plugin(name: 'invalid', fn: (this: Compiler) => void): void;
 		plugin(name: 'run', fn: (this: Compiler, compiler: Compiler) => void): void;
@@ -434,8 +477,10 @@ declare module 'webpack/lib/Compiler' {
 
 declare module 'webpack/lib/ContextModuleFactory' {
 	import Tapable = require('tapable');
+	import Parser = require('webpack/lib/Parser');
 
 	class ContextModuleFactory extends Tapable {
+		plugin(name: 'parser', fn: (this: ContextModuleFactory, parser: Parser, options: any) => void): void;
 	}
 
 	export = ContextModuleFactory;
@@ -635,11 +680,20 @@ declare module 'webpack/lib/NormalModuleFactory' {
 	export = NormalModuleFactory;
 }
 
+declare module 'webpack/lib/NullFactory' {
+	class NullFactory {
+		create(data: any, callback: () => void): void;
+	}
+
+	export = NullFactory;
+}
+
 declare module 'webpack/lib/Parser' {
 	import Tapable = require('tapable');
 	import NormalModule = require('webpack/lib/NormalModule');
 	import Module = require('webpack/lib/Module');
 	import Compilation = require('webpack/lib/Compilation');
+	import Dependency = require('webpack/lib/Dependency');
 
 	class Parser extends Tapable {
 		state: Parser.NormalModuleState | Parser.ParsedVariableState;
@@ -655,7 +709,7 @@ declare module 'webpack/lib/Parser' {
 		}
 		interface ParsedVariableState {
 			current: {
-				addDependency(dep: any): void;
+				addDependency(dependency: Dependency): void;
 			};
 			module: Module;
 		}

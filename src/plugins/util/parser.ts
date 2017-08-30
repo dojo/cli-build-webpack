@@ -3,6 +3,7 @@ import {
 	AssignmentExpression,
 	BaseFunction,
 	Expression,
+	Node,
 	Property,
 	Statement,
 	SwitchCase,
@@ -10,14 +11,11 @@ import {
 } from 'estree';
 
 /**
- * @private
  * If the provided node is an array expression, then return an array containing its values.
+ * @private
  *
- * @param item
- * An AST node
- *
- * @return
- * An array of values if the node is an array expression; otherwise, `undefined`.
+ * @param item An AST node
+ * @return An array of values if the node is an array expression; otherwise, `undefined`.
  */
 export function extractArrayValues(item: any) {
 	if (!isArrayExpression(item)) {
@@ -29,13 +27,10 @@ export function extractArrayValues(item: any) {
 /**
  * Return a parent node's child node, if it exists.
  *
- * @param item
- * The parent node.
- *
- * @return
- * The child node, if it exists.
+ * @param item The parent node.
+ * @return The child node, if it exists.
  */
-export const getNextItem = (function () {
+export const getNextItem: (item: Node) => Node | null = (function () {
 	const getters = {
 		argument: (item: { argument: Expression | null }) => item.argument,
 		arguments: (item: { arguments: Expression[] }) => item.arguments,
@@ -91,7 +86,7 @@ export const getNextItem = (function () {
 		nextItemMap[ type ] = getters.body;
 	});
 
-	return function (item: any): any {
+	return function (item: Node): Node | null {
 		if (!item) {
 			return null;
 		}
@@ -102,28 +97,22 @@ export const getNextItem = (function () {
 })();
 
 /**
- * @private
  * Determine whether the provided node is an array expression.
+ * @private
  *
- * @param item
- * The node to test.
- *
- * @return
- * `true` if the item is an array expression; false otherwise.
+ * @param item The node to test.
+ * @return `true` if the item is an array expression; false otherwise.
  */
 export function isArrayExpression(item: any): item is ArrayExpression {
 	return item && item.type === 'ArrayExpression';
 }
 
 /**
- * @private
  * Determine whether the provided node is a function declaration.
+ * @private
  *
- * @param item
- * The item to test.
- *
- * @return
- * `true` if the node represents either function declaration or a function expression.
+ * @param item The item to test.
+ * @return `true` if the node represents either function declaration or a function expression.
  */
 export function isFunctionDefinition(item: any): item is BaseFunction {
 	if (!item) {
@@ -135,19 +124,14 @@ export function isFunctionDefinition(item: any): item is BaseFunction {
 }
 
 /**
- * @private
  * Determine whether the specified node is shadowing any of the specified variable names.
+ * @private
  *
- * @param item
- * The node to test
- *
- * @param importNames
- * A list of variable names.
- *
- * @return
- * `true` if the node is a shadowing node
+ * @param item The node to test
+ * @param importNames A list of variable names.
+ * @return `true` if the node is a shadowing node
  */
-export function isShadowing(item: any, importNames: string[]): boolean {
+export function isShadowing(item: Node, importNames: string[]): boolean {
 	if (isFunctionDefinition(item)) {
 		const { params } = item;
 		const paramNames = params.map((param: any) => param.name);

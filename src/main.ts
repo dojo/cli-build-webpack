@@ -13,6 +13,7 @@ export interface Bundles {
 }
 
 export interface BuildArgs {
+	[index: string]: any;
 	messageBundles: string | string[];
 	supportedLocales: string | string[];
 	watch: boolean;
@@ -24,7 +25,7 @@ export interface BuildArgs {
 	disableLazyWidgetDetection: boolean;
 	bundles: Bundles;
 	externals: { outputPath?: string; dependencies: ExternalDep[] };
-	[index: string]: any;
+	features: string | string[];
 }
 
 interface ConfigFactory {
@@ -206,6 +207,12 @@ const command: Command<BuildArgs> = {
 			describe: 'Disable lazy widget loading detection',
 			type: 'boolean'
 		});
+
+		options('f', {
+			alias: 'features',
+			describe: 'Features sets to optimize the build with\n\nValid values are: android, chrome, edge, firefox, ie11, ios, node, node8, safari',
+			type: 'array'
+		});
 	},
 	run(helper: Helper, args: BuildArgs): Promise<void> {
 		const dojoRc = helper.configuration.get() || Object.create(null);
@@ -219,10 +226,10 @@ const command: Command<BuildArgs> = {
 		const configArgs = getConfigArgs(mergeConfigArgs(dojoRc as BuildArgs, args));
 
 		if (args.watch) {
-			return watch(config(configArgs), options, args);
+			return watch(config(configArgs), options, args) as Promise<void>;
 		}
 		else {
-			return compile(config(configArgs), options);
+			return compile(config(configArgs), options) as Promise<void>;
 		}
 	},
 	eject(helper: Helper) {

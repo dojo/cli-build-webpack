@@ -7,12 +7,13 @@
 
 The official dojo 2 build command.
 
-*WARNING* This is _beta_ software. While we do not anticipate significant changes to the API at this stage, we may feel the need to do so. This is not yet production ready, so you should use at your own risk. 
+*WARNING* This is _beta_ software. While we do not anticipate significant changes to the API at this stage, we may feel the need to do so. This is not yet production ready, so you should use at your own risk.
 
 - [Usage](#usage)
 - [Features](#features)
   - [Building](#building)
   - [Building a custom element](#building-a-custom-element)
+  - [Feature optimization](#feature-optimization)
   - [Eject](#eject)
   - [3rd party library integration](#interop-with-external-libraries)
 - [How do I contribute?](#how-do-i-contribute)
@@ -79,6 +80,72 @@ If the source file does not follow the pattern `create[custom element]Element`, 
 
 ```bash
 dojo build webpack --element=src/path/to/element.ts --elementPrefix=the-special
+```
+
+### Feature optimization
+
+This command supports the ability to optimize code based on statically asserted features.  The tool can search the source code for modules that attempt to detect features using a [`@dojo/has`](https://github.com/dojo/has) type of API.  By supplying a feature set (or sets) on the command line, the build will optimize code branches, making the code smaller and more efficient.  This allows targeting of particular platforms.
+
+When specifying multiple feature sets, if they do not align, the tool will not optimize the source code for these feature sets and will instead continue to leave that feature to be detected at run-time.
+
+From the command line, the feature sets are provided to the `-f` or `--feature` argument.  The available feature sets are aligned to platforms.  The currently available feature sets are:
+
+|Feature Set|Description|
+|-|-|
+|`android`|This feature set represents Android 5+ with integrated Chrome browser.  *Note* it is not suitable for Android 4.4.|
+|`chrome`|This feature set represents Chrome 59+ or Opera 46+[<sup>1</sup>](#note-1)|
+|`edge`|This feature set represents Edge 15+[<sup>1</sup>](#note-1)|
+|`firefox`|This feature set represents Firefox 54+[<sup>1</sup>](#note-1)|
+|`ie11`|This feature set represents Internet Explorer 11|
+|`ios`|This feature set represents iOS 10.3+[<sup>2</sup>](#note-2)|
+|`node`|This feature set represents Node.js 6/7[<sup>2</sup>](#note-2)|
+|`node8`|This feature set represents Node.js 8+|
+|`safari`|This feature set represents Safari 10+[<sup>2</sup>](#note-2)|
+
+<span id="note-1">[1]:</span> Many of these features were present in earlier versions, but the specific version was the GA release at the time of writing when this was validated.
+
+<span id="note-2">[2]:</span> At least one of the features was not present in previous releases.
+
+Instead of _sniffing_ for a browser, the feature sets are a static set of features that are expressed as flags in the `@dojo` modules.  The current set of flags are:
+
+|Flag|Description|
+|-|-|
+|arraybuffer|Supports `ArrayBuffer`|
+|blob|Supports the `blob` response type for XHR requests|
+|dom-mutationobserver|Supports MutationObserver|
+|es-observable|Supports ES Observable proposal|
+|es2017-object|Supports ES2017 Object features|
+|es2017-string|Supports ES2017 String features|
+|es6-array|Supports ES2015 Array features (except `.fill`)|
+|es6-array-fill|Supports a non-buggy version of `Array.prototype.fill()`|
+|es6-map|Supports ES2015 Map|
+|es6-math|Supports ES2015 Math features (except `.imul`|
+|es6-math-imul|Supports a non-buggy version of `Math.imul()`|
+|es6-object|Supports ES2015 Object features|
+|es6-promise|Supports ES2015 Promise|
+|es6-set|Supports ES2015 Set|
+|es6-string|Supports ES2015 String features (except `.raw()`|
+|es6-string-raw|Supports a non-buggy version of `String.raw()`|
+|es6-symbol|Supports ES2015 Symbol|
+|es6-weakmap|Supports ES2015 WeakMap|
+|es7-array|Supports ES2016 Array features|
+|fetch|Supports the `fetch` API|
+|filereader|Supports the FileReader API|
+|float32array|Supports the Float32Array API|
+|formdata|Supports form data|
+|host-node|Is a NodeJS Host|
+|host-browser|Is a Browser Host|
+|microtasks|Supports an API that allows scheduling of microtasks|
+|node-buffer|Supports the Node.JS Buffer API|
+|raf|Supports the `requestAnimationFrame` API|
+|setimmediate|Supports the `setImmediate` API|
+|xhr|Supports XMLHTTPRequest API|
+|xhr2|Supports the XMLHTTPRequest 2 API|
+
+An example of generating a build that _hardwires_ features for Microsoft Edge and Chrome, you would use the following on the command line:
+
+```shell
+$ dojo build -f edge chrome
 ```
 
 ### Eject

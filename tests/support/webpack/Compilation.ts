@@ -2,28 +2,25 @@ import CompilationParams = require('./CompilationParams');
 import Pluginable from './Pluginable';
 
 class MockCompilation extends Pluginable {
-	inputFileSystem: any;
+	dependencyFactories = new Map();
+	dependencyTemplates = new Map();
+	inputFileSystem: any = Object.create(null);
 	options: any;
-	modules: any[];
-	moduleTemplate: Pluginable;
+	modules: any[] = [];
+	moduleTemplate = new Pluginable();
 	mainTemplate: Pluginable;
 	// Non-standard property used only for testing
 	params: CompilationParams;
-	resolvers: any[];
-	applied: any[];
+	applied: any[] = [];
+	resolvers: any[] = [];
 
 	constructor(options?: any) {
 		super();
-		this.inputFileSystem = Object.create(null);
-		this.modules = [];
-		this.moduleTemplate = new Pluginable();
-		this.resolvers = [];
 		this.options = options || {
 			resolve: {
 				modules: [ '/root/path' ]
 			}
 		};
-		this.applied = [];
 	}
 
 	addModule(module: any) {

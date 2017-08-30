@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { getBasePath, resolveMid } from './util/main';
-import { CallExpression, Program } from 'estree';
+import { CallExpression, Node, Program } from 'estree';
 import { getNextItem } from './util/parser';
 import Set from '@dojo/shim/Set';
 import ConcatSource = require('webpack-sources/lib/ConcatSource');
@@ -76,13 +76,13 @@ interface CallExpressionWithParent {
  * Iterate through a Statement and find all the CallExpressions. The call expression and the
  * AST path to the expressio is saved.
  *
- * @param statement
- * @return {CallExpressionWithParent[]}
+ * @param statement The program/statement to get the call expressions for
+ * @return The array of call expressions including the parent
  */
-function findCallExpressions(statement: Program) {
+function findCallExpressions(statement: Program): CallExpressionWithParent[] {
 	const callExpressions: CallExpressionWithParent[] = [];
 
-	function walker(path: any[], item: any) {
+	function walker(path: Node[], item: Node) {
 		if (!item) {
 			return;
 		}

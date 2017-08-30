@@ -4,6 +4,8 @@ import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { BuildArgs } from './main';
 import Set from '@dojo/shim/Set';
+import StaticOptmizePlugin from '@dojo/static-optimize-plugin/StaticOptimizePlugin';
+import GetFeaturesType from './getFeatures';
 const IgnorePlugin = require('webpack/lib/IgnorePlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -18,6 +20,7 @@ const CoreLoadPlugin = require(`${packagePath}/plugins/CoreLoadPlugin`).default;
 const ExternalLoaderPlugin = require(`${packagePath}/plugins/ExternalLoaderPlugin`).default;
 const I18nPlugin = require(`${packagePath}/plugins/I18nPlugin`).default;
 const IgnoreUnmodifiedPlugin = require(`${packagePath}/plugins/IgnoreUnmodifiedPlugin`).default;
+const getFeatures: typeof GetFeaturesType = require(`${packagePath}/getFeatures`).default;
 const basePath = process.cwd();
 
 const packageJsonPath = path.join(basePath, 'package.json');
@@ -41,6 +44,8 @@ function getJsonpFunction(name?: string) {
 
 function webpackConfig(args: Partial<BuildArgs>) {
 	args = args || {};
+
+	const hasFlags = getFeatures(args);
 
 	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap' });
 	const localIdentName = (args.watch || args.withTests) ? '[name]__[local]__[hash:base64:5]' : '[hash:base64:8]';
@@ -181,12 +186,13 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				ignoredModules,
 				mapAppModules: args.withTests
 			}),
-			...includeWhen(args.element, () => [
-				new webpack.optimize.CommonsChunkPlugin({
+			new StaticOptmizePlugin(hasFlags),
+			...includeWhen(args.element, () => {
+				return [ new webpack.optimize.CommonsChunkPlugin({
 					name: 'widget-core',
 					filename: 'widget-core.js'
-				})
-			]),
+				}) ];
+			}),
 			...includeWhen(!args.watch && !args.withTests, () => {
 				return [ new webpack.optimize.UglifyJsPlugin({
 					sourceMap: true,
