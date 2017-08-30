@@ -55,6 +55,21 @@ You can also build in watch mode, which will automatically rebuild your applicat
 dojo build webpack -w
 ```
 
+When using watch mode, you can specify a port, or port range, to use when determining which port to serve your application on.
+
+```bash
+# a single port
+dojo build webpack -w --port=8080
+
+# a list of ports
+dojo build webpack -w --port=8080,8181
+
+# a range of ports
+dojo build webpack -w --port=9010:9000
+```
+
+The watch server will use the first unused port in the list you specified. Default port range is 9990-9999.
+
 `@dojo/cli-build-webpack` can be customized further. Use the help option to see everything you can do:
 
 ```bash

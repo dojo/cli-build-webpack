@@ -1,12 +1,22 @@
 import { Command, EjectOutput, Helper, OptionsHelper } from '@dojo/interfaces/cli';
-import * as fs from 'fs';
-import * as path from 'path';
 import { underline } from 'chalk';
-import webpack = require('webpack');
+import * as fs from 'fs';
+import * as net from 'net';
+import * as path from 'path';
 import { ExternalDep } from './plugins/ExternalLoaderPlugin';
+import webpack = require('webpack');
+
 const WebpackDevServer: any = require('webpack-dev-server');
 const config: ConfigFactory = require('./webpack.config');
 const pkgDir = require('pkg-dir');
+
+const portRangeDelimeter = ':';
+const portListDelimeter = ',';
+const defaultPortRange = '9999:9990';
+
+function portStringToInt(portString: string) {
+	return parseInt(portString, 10);
+}
 
 export interface Bundles {
 	[key: string]: string[];
@@ -17,7 +27,7 @@ export interface BuildArgs {
 	messageBundles: string | string[];
 	supportedLocales: string | string[];
 	watch: boolean;
-	port: number;
+	port: string;
 	element: string;
 	elementPrefix: string;
 	withTests: boolean;
@@ -84,7 +94,29 @@ function mergeConfigArgs(...sources: BuildArgs[]): BuildArgs {
 	}, Object.create(null));
 }
 
-function watch(config: webpack.Config, options: WebpackOptions, args: BuildArgs): Promise<void> {
+async function isPortAvailable(port: number): Promise<boolean> {
+	const server = net.createServer();
+
+	return new Promise<boolean>((resolve, reject) => {
+		server.once('error', function (err: any) {
+			if (err.code === 'EADDRINUSE') {
+				resolve(false);
+			}
+			else {
+				reject(new Error(`Unexpected error ${err.message}`));
+			}
+		});
+
+		server.once('listening', function () {
+			server.close();
+			resolve(true);
+		});
+
+		server.listen(port, '127.0.0.1');
+	});
+}
+
+async function watch(config: webpack.Config, options: WebpackOptions, args: BuildArgs): Promise<void> {
 	config.devtool = 'inline-source-map';
 
 	config.entry = (function (entry) {
@@ -103,12 +135,44 @@ function watch(config: webpack.Config, options: WebpackOptions, args: BuildArgs)
 	})(config.entry);
 
 	const compiler = webpack(config);
+	const portRange = String(args.port || defaultPortRange);
+	let ports: number[] = [];
+	let serverPort: number | undefined;
+
+	if (portRange.indexOf(portRangeDelimeter) >= 0) {
+		let [ low, high ] = portRange.split(portRangeDelimeter).map(portStringToInt);
+
+		if (high < low) {
+			[ low, high ] = [ high, low ];
+		}
+
+		for (let port = high; port >= low; port--) {
+			ports.push(port);
+		}
+	}
+	else if (portRange.indexOf(portListDelimeter) >= 0) {
+		ports = portRange.split(portListDelimeter).map(portStringToInt);
+	}
+	else {
+		ports.push(portStringToInt(portRange));
+	}
+
+	for (let i = 0; i < ports.length; i++) {
+		if (await isPortAvailable(ports[i])) {
+			serverPort = ports[i];
+			break;
+		}
+	}
+
+	if (!serverPort) {
+		return Promise.reject(new Error(`Cannot start a build server because the port is in use, tried ${ports.join(', ')}. Do you already have a build server running?`));
+	}
+
 	const server = new WebpackDevServer(compiler, options);
 
 	return new Promise<void>((resolve, reject) => {
-		const port = args.port || 9999;
-		server.listen(port, '127.0.0.1', (err: Error) => {
-			console.log(`Starting server on http://localhost:${port}`);
+		server.listen(serverPort, '127.0.0.1', (err: Error) => {
+			console.log(`Starting server on http://localhost:${serverPort}`);
 			if (err) {
 				reject(err);
 				return;
@@ -155,6 +219,8 @@ function buildNpmDependencies(): any {
 }
 
 const command: Command<BuildArgs> = {
+	group: 'build',
+	name: 'webpack',
 	description: 'create a build of your application',
 	register(options: OptionsHelper): void {
 		options('w', {
@@ -164,8 +230,8 @@ const command: Command<BuildArgs> = {
 
 		options('p', {
 			alias: 'port',
-			describe: 'port to serve on when using --watch',
-			type: 'number'
+			describe: 'port to serve on when using --watch. Can be a single port (9999), a range (9999:9990) or a list (9999,9997)',
+			type: 'string'
 		});
 
 		options('t', {
