@@ -374,6 +374,7 @@ declare module 'webpack/lib/Compilation' {
 		dependencyTemplates: Map<typeof Dependency, any>;
 		mainTemplate: MainTemplate;
 		moduleTemplate: ModuleTemplate;
+		errors?: Error[];
 
 		constructor(compiler: Compiler);
 
@@ -464,6 +465,7 @@ declare module 'webpack/lib/Compiler' {
 			hasWarnings(): boolean;
 			toJson(options?: webpack.Stats): {};
 			toString(options?: webpack.Stats): string;
+			compilation: Compilation;
 		}
 		class Watching {
 			close(callback: () => void): void;
