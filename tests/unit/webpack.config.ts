@@ -1,11 +1,12 @@
 import { readFileSync } from 'fs';
-import { afterEach, beforeEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import { resolve } from 'path';
 import { createContext, runInContext } from 'vm';
 import { Config } from 'webpack';
 import MockModule from '../support/MockModule';
 import { BuildArgs } from '../../src/main';
+
+const { assert } = intern.getPlugin('chai');
+const { afterEach, beforeEach, describe, it } = intern.getInterface('bdd');
 
 const basePath = process.cwd();
 const configPath = resolve(basePath, '_build/src/webpack.config.js');
@@ -48,7 +49,7 @@ function start(cli = true, args: Partial<BuildArgs> = {}) {
 			cwd: () => process.cwd(),
 			env: { DOJO_CLI: cli }
 		},
-		require: (<any> require).nodeRequire,
+		require,
 		__dirname: dirname
 	});
 

@@ -1,19 +1,8 @@
-import { RootRequire } from '@dojo/interfaces/loader';
 import * as mockery from 'mockery';
 import * as sinon from 'sinon';
 
-declare const require: RootRequire;
-const dojoNodePlugin = 'intern/dojo/node';
-
 function load(modulePath: string): any {
-	const mid = `${dojoNodePlugin}!${modulePath}`;
-	return require(mid);
-}
-
-function unload(modulePath: string): void {
-	const abs = require.toUrl(modulePath);
-	const plugin = require.toAbsMid(dojoNodePlugin);
-	require.undef(`${plugin}!${abs}`);
+	return require(modulePath);
 }
 
 function resolvePath(basePath: string, modulePath: string): string {
@@ -81,16 +70,12 @@ export default class MockModule {
 
 	getModuleUnderTest(): any {
 		this.start();
-		const allowable = require.toUrl(this.moduleUnderTestPath) + '.js';
+		const allowable = require(this.moduleUnderTestPath) + '.js';
 		mockery.registerAllowable(allowable, true);
 		return load(this.moduleUnderTestPath);
 	}
 
 	destroy(): void {
-		unload(this.moduleUnderTestPath);
-		for (let mock in this.mocks) {
-			unload(resolvePath(this.basePath, mock));
-		}
 		this.sandbox.restore();
 		mockery.deregisterAll();
 		mockery.disable();

@@ -1,9 +1,6 @@
-import { readFileSync } from 'fs';
 import { BuildArgs } from './main';
 
 export type FeatureMap = { [feature: string]: boolean };
-
-const isCli = !!process.env.DOJO_CLI;
 
 /**
  * A simple wrapper for require to return a `FeatureMap` from JSON
@@ -11,15 +8,7 @@ const isCli = !!process.env.DOJO_CLI;
  */
 function resolve(mid: string): FeatureMap | undefined {
 	try {
-		let result: FeatureMap;
-		/* istanbul ignore if */
-		if (isCli) {
-			result = require(mid);
-		}
-		else {
-			result = JSON.parse(readFileSync((require as any).toUrl(mid), 'utf8'));
-		}
-		return result;
+		return require(mid) as FeatureMap;
 	}
 	catch (e) { }
 }

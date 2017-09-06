@@ -1,8 +1,9 @@
-import { describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import * as sinon from 'sinon';
 import Compiler = require('../../support/webpack/Compiler');
 import IgnoreUnmodifiedPlugin from '../../../src/plugins/IgnoreUnmodifiedPlugin';
+
+const { assert } = intern.getPlugin('chai');
+const { describe, it } = intern.getInterface('bdd');
 
 const FILE_PATH = '/path/to/myWidget.m.css';
 const MTIME = 8675309;

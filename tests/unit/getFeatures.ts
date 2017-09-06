@@ -1,11 +1,10 @@
-import * as registerSuite from 'intern!object';
-import * as assert from 'intern/chai!assert';
 import { stub } from 'sinon';
 import getFeatures from '../../src/getFeatures';
 
-registerSuite({
-	name: 'getFeatures',
+const { registerSuite } = intern.getInterface('object');
+const { assert } = intern.getPlugin('chai');
 
+registerSuite('getFeatures', {
 	'no features'() {
 		assert.deepEqual(getFeatures({}), {});
 	},

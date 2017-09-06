@@ -1,8 +1,10 @@
-import { beforeEach, afterEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import * as path from 'path';
 import MockModule from '../../support/MockModule';
 import * as sinon from 'sinon';
+import '../../../src/loaders/css-module-dts-loader/loader';
+
+const { assert } = intern.getPlugin('chai');
+const { afterEach, beforeEach, describe, it } = intern.getInterface('bdd');
 
 const cssFilePath = '/path/to/file.css';
 const cssFilePath2 = '/path/to/file2.css';

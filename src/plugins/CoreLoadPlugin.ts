@@ -138,14 +138,11 @@ export default class DojoLoadPlugin {
 	private _mapAppModules: boolean;
 
 	constructor(options: DojoLoadPluginOptions = {}) {
-		// this destructure cannot have default values because we are emitting to es6, and using
-		// a version of istanbul that does not support es6. as soon as we update to a newer
-		// version of istanbul, we can move the default values to the destructure.
-		const { basePath = '', chunkNames, detectLazyLoads, ignoredModules, mapAppModules = false } = options;
+		const { basePath = './', chunkNames = {}, detectLazyLoads = false, ignoredModules, mapAppModules = false } = options;
 
-		this._basePath = basePath && basePath.replace(/\\/g, '/').replace(/^[cC]:/, '');
-		this._detectLazyLoads = detectLazyLoads || false;
-		this._lazyChunkNames = chunkNames || {};
+		this._basePath = basePath.replace(/\\/g, '/').replace(/^[cC]:/, '');
+		this._detectLazyLoads = detectLazyLoads;
+		this._lazyChunkNames = chunkNames;
 		this._mapAppModules = mapAppModules;
 
 		if (ignoredModules) {

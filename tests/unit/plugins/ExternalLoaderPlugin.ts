@@ -1,9 +1,10 @@
-import { describe, it, beforeEach, afterEach } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import Compiler = require('../../support/webpack/Compiler');
 import ExternalLoaderPlugin from '../../../src/plugins/ExternalLoaderPlugin';
 import MockModule from '../../support/MockModule';
 import { SinonSpy } from 'sinon';
+
+const { assert } = intern.getPlugin('chai');
+const { describe, it, beforeEach, afterEach } = intern.getInterface('bdd');
 
 let mockModule: MockModule;
 let Plugin: typeof ExternalLoaderPlugin;

@@ -8,9 +8,9 @@ module.exports = function(grunt) {
 				src: [ '**/*.md', '**/*.json' ],
 				dest: '<%= devDirectory %>/src/'
 			}
-		}
+		},
+        intern: {
+		    version: 4
+        }
 	});
-	grunt.registerTask('ci', [
-		'intern:node'
-	]);
 };

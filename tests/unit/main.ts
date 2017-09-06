@@ -1,9 +1,10 @@
 import * as fs from 'fs';
-import { afterEach, beforeEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import * as sinon from 'sinon';
 import MockModule from '../support/MockModule';
 import { throwImmediately } from '../support/util';
+
+const { assert } = intern.getPlugin('chai');
+const { afterEach, beforeEach, describe, it } = intern.getInterface('bdd');
 
 describe('main', () => {
 

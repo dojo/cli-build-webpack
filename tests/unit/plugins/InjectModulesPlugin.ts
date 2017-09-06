@@ -1,5 +1,3 @@
-import { beforeEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import { assign } from '@dojo/core/lang';
@@ -10,6 +8,11 @@ import MockCompilation = require('../../support/webpack/Compilation');
 import MockCompiler = require('../../support/webpack/Compiler');
 import MockNormalModule = require('../../support/webpack/NormalModule');
 import InjectModulesPlugin from '../../../src/plugins/InjectModulesPlugin';
+import MockModule from '../../support/MockModule';
+import { afterEach } from 'intern/lib/interfaces/tdd';
+
+const { assert } = intern.getPlugin('chai');
+const { beforeEach, describe, it } = intern.getInterface('bdd');
 
 function createModule(path: string): MockNormalModule {
 	return new MockNormalModule(path, path, path, [], path, {});
@@ -187,7 +190,6 @@ describe('inject-modules', () => {
 					const module = compilation.modules[0];
 					assert.isTrue(module.isBuilt);
 					assert.isTrue(module.dependenciesProcessed);
-					assert.instanceOf(module, MockNormalModule);
 
 					[ 'rawRequest', 'request', 'userRequest', 'loaders', 'resource', 'parser' ].forEach((key: string) => {
 						assert.strictEqual((<any> module)[key], (<any> data)[key]);
@@ -376,8 +378,8 @@ describe('inject-modules', () => {
 			return new Promise((resolve, reject) => {
 				resolver({ resource: '/test/module.js' }, () => {
 					try {
-						assert.isTrue((<any> plugin.resolve).called);
-						assert.isTrue((<any> plugin.createModules).calledWith([ { contextInfo: {}, context: '/test', request: './module' } ]));
+						assert.isTrue((<any> plugin.resolve).called, 'was called');
+						assert.isTrue((<any> plugin.createModules).calledWith([ { contextInfo: {}, context: '/test', request: './module' } ]), 'was called with the right parameters');
 						resolve();
 					}
 					catch (error) {
@@ -444,8 +446,36 @@ describe('inject-modules', () => {
 			});
 		}
 
+		let mockModule: MockModule;
+
+		beforeEach(() => {
+			mockModule = new MockModule('../../src/plugins/InjectModulesPlugin');
+			mockModule.dependencies([
+				{
+					name: 'webpack/lib/NormalModule',
+					mock: require('../../support/webpack/NormalModule')
+				},
+				{
+					name: 'webpack/lib/Chunk',
+					mock: require('../../support/webpack/Chunk')
+				},
+				{
+					name: 'webpack/lib/Compiler',
+					mock: require('../../support/webpack/Compiler')
+				},
+				{
+					name: 'webpack/lib/Compilation',
+					mock: require('../../support/webpack/Compilation')
+				}
+			]);
+		});
+
+		afterEach(() => {
+			mockModule.destroy();
+		});
+
 		it('injects modules into the appropriate chunk', () => {
-			const plugin = new InjectModulesPlugin({
+			const plugin = new (mockModule.getModuleUnderTest().default)({
 				resourcePattern: /test\/module/,
 				moduleIds: [ './module' ]
 			});
@@ -459,6 +489,8 @@ describe('inject-modules', () => {
 				assert.strictEqual(chunk.modules.length, 2, 'The injected module is added to the chunk.');
 				assert.strictEqual(module.chunks.length, 1, 'The chunk is registered with the injected module.');
 				assert.strictEqual(module.chunks[0], chunk);
+
+				mockModule.destroy();
 			});
 		});
 

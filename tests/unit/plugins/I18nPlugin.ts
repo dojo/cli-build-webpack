@@ -1,17 +1,17 @@
-import coreLoad from '@dojo/core/load';
-import { Require } from '@dojo/interfaces/loader';
 import { Program } from 'estree';
-import { afterEach, describe, it } from 'intern!bdd';
+import { beforeEach } from 'intern/lib/interfaces/tdd';
 import { sep as separator } from 'path';
-import * as assert from 'intern/chai!assert';
+import I18nPlugin from '../../../src/plugins/I18nPlugin';
+import { hasExtension } from '../../../src/plugins/util/main';
+import MockModule from '../../support/MockModule';
+import MockPlugin from '../../support/MockPlugin';
+import { fetchCldrData } from '../../support/util';
 import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 import Compilation = require('../../support/webpack/Compilation');
 import Compiler = require('../../support/webpack/Compiler');
-import MockPlugin from '../../support/MockPlugin';
-import { fetchCldrData } from '../../support/util';
-import I18nPlugin from '../../../src/plugins/I18nPlugin';
-import { hasExtension } from '../../../src/plugins/util/main';
-declare const require: Require;
+
+const { assert } = intern.getPlugin('chai');
+const { afterEach, describe, it } = intern.getInterface('bdd');
 
 interface CldrTestOptions {
 	ast?: Program;
@@ -68,8 +68,7 @@ function getBeforeResolveModule(module: ModuleInfo | null) {
 }
 
 function loadAst() {
-	const url = require.toUrl('../../support/mocks/ast/cldr-complete.json');
-	return coreLoad(url).then(([ json ]: [ Program ]) => json);
+	return require('../../support/mocks/ast/cldr-complete.json') as Program;
 }
 
 function testCldrInjection(plugin: I18nPlugin, options: Partial<CldrTestOptions>) {
@@ -120,170 +119,164 @@ describe('i18n', () => {
 
 	describe('CLDR data', () => {
 		it('should inject data for the default locale', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({ defaultLocale: 'en' });
-				const source = testCldrInjection(plugin, { ast });
+			const plugin = new I18nPlugin({ defaultLocale: 'en' });
+			const source = testCldrInjection(plugin, { ast: loadAst() });
 
-				const cldrData = fetchCldrData('en');
-				const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
-				assert.strictEqual(source.source().indexOf(injected), 0);
-			});
+			const cldrData = fetchCldrData('en');
+			const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
+			assert.strictEqual(source.source().indexOf(injected), 0);
 		});
 
 		it('should inject data for supported locales', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({
-					defaultLocale: 'en',
-					supportedLocales: [ 'es' ]
-				});
-				const source = testCldrInjection(plugin, { ast });
-
-				const cldrData = fetchCldrData([ 'en', 'es' ]);
-				const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
-				assert.strictEqual(source.source().indexOf(injected), 0);
+			const plugin = new I18nPlugin({
+				defaultLocale: 'en',
+				supportedLocales: [ 'es' ]
 			});
+			const source = testCldrInjection(plugin, { ast: loadAst() });
+
+			const cldrData = fetchCldrData([ 'en', 'es' ]);
+			const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
+			assert.strictEqual(source.source().indexOf(injected), 0);
 		});
 
 		it('should inject data only once', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({ defaultLocale: 'en' });
-				const source = testCldrInjection(plugin, { ast, moduleCount: 2 });
+			const plugin = new I18nPlugin({ defaultLocale: 'en' });
+			const source = testCldrInjection(plugin, { ast: loadAst(), moduleCount: 2 });
 
-				const cldrData = fetchCldrData('en');
-				const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
-				assert.strictEqual(source.source().indexOf(injected), 0);
-			});
+			const cldrData = fetchCldrData('en');
+			const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
+			assert.strictEqual(source.source().indexOf(injected), 0);
 		});
 
 		it('should include CLDR data from previous builds with the `cacheCldrUrls` option', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({
-					cacheCldrUrls: true,
-					defaultLocale: 'en'
-				});
-				testCldrInjection(plugin, { ast });
-				const source = testCldrInjection(plugin, {});
-
-				const cldrData = fetchCldrData('en');
-				const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
-				assert.strictEqual(source.source().indexOf(injected), 0);
+			const plugin = new I18nPlugin({
+				cacheCldrUrls: true,
+				defaultLocale: 'en'
 			});
+			testCldrInjection(plugin, { ast: loadAst() });
+			const source = testCldrInjection(plugin, {});
+
+			const cldrData = fetchCldrData('en');
+			const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
+			assert.strictEqual(source.source().indexOf(injected), 0);
 		});
 
 		it('should not inject CLDR data `@dojo/i18n/cldr/load` is not used', () => {
-			return loadAst().then((ast: Program) => {
-				const request = '/path/to/module.js';
-				const plugin = new I18nPlugin({ defaultLocale: 'en' });
-				const source = testCldrInjection(plugin, {
-					ast,
-					moduleInfo: {
-						context: '/parent/context',
-						issuer: '/issuer/path',
-						request
-					},
-					moduleTemplateId: request
-				});
-
-				assert.strictEqual(source, '');
+			const request = '/path/to/module.js';
+			const plugin = new I18nPlugin({ defaultLocale: 'en' });
+			const source = testCldrInjection(plugin, {
+				ast: loadAst(),
+				moduleInfo: {
+					context: '/parent/context',
+					issuer: '/issuer/path',
+					request
+				},
+				moduleTemplateId: request
 			});
+
+			assert.strictEqual(source, '');
 		});
 
 		it('should not inject data to other modules', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({ defaultLocale: 'en' });
-				const source = testCldrInjection(plugin, {
-					ast,
-					moduleTemplateId: '/path/to/module.js'
-				});
-				assert.strictEqual(source, '', 'No data injected.');
+			const plugin = new I18nPlugin({ defaultLocale: 'en' });
+			const source = testCldrInjection(plugin, {
+				ast: loadAst(),
+				moduleTemplateId: '/path/to/module.js'
 			});
+			assert.strictEqual(source, '', 'No data injected.');
 		});
 
 		it('should ignore node modules', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({ defaultLocale: 'en' });
-				const source = testCldrInjection(plugin, {
-					ast,
-					moduleInfo: {
-						context: '/parent/context',
-						issuer: '/node_modules/issuer/path',
-						request: '/node_modules/@dojo/i18n/cldr/load/webpack'
-					}
-				});
-
-				const injected = 'var __cldrData__ = {}';
-				assert.strictEqual(source.source().indexOf(injected), 0);
+			const plugin = new I18nPlugin({ defaultLocale: 'en' });
+			const source = testCldrInjection(plugin, {
+				ast: loadAst(),
+				moduleInfo: {
+					context: '/parent/context',
+					issuer: '/node_modules/issuer/path',
+					request: '/node_modules/@dojo/i18n/cldr/load/webpack'
+				}
 			});
+
+			const injected = 'var __cldrData__ = {}';
+			assert.strictEqual(source.source().indexOf(injected), 0);
 		});
 
 		it('should ignore modules without an issuer', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({ defaultLocale: 'en' });
-				const source = testCldrInjection(plugin, {
-					ast,
-					moduleInfo: {
-						request: '@dojo/i18n/cldr/load/webpack'
-					}
-				});
-
-				const injected = `var __cldrData__ = {}`;
-				assert.strictEqual(source.source().indexOf(injected), 0);
+			const plugin = new I18nPlugin({ defaultLocale: 'en' });
+			const source = testCldrInjection(plugin, {
+				ast: loadAst(),
+				moduleInfo: {
+					request: '@dojo/i18n/cldr/load/webpack'
+				}
 			});
+
+			const injected = `var __cldrData__ = {}`;
+			assert.strictEqual(source.source().indexOf(injected), 0);
 		});
 
 		it('should ignore non-JS modules', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({ defaultLocale: 'en' });
-				const source = testCldrInjection(plugin, {
-					ast,
-					moduleInfo: {
-						context: '/parent/context',
-						issuer: '/issuer/path',
-						request: '/@dojo/i18n/cldr/load/webpack.css'
-					}
-				});
-
-				const injected = 'var __cldrData__ = {}';
-				assert.strictEqual(source.source().indexOf(injected), 0);
+			const plugin = new I18nPlugin({ defaultLocale: 'en' });
+			const source = testCldrInjection(plugin, {
+				ast: loadAst(),
+				moduleInfo: {
+					context: '/parent/context',
+					issuer: '/issuer/path',
+					request: '/@dojo/i18n/cldr/load/webpack.css'
+				}
 			});
+
+			const injected = 'var __cldrData__ = {}';
+			assert.strictEqual(source.source().indexOf(injected), 0);
 		});
 
 		it('should allow requests with relative paths', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({ defaultLocale: 'en' });
-				const source = testCldrInjection(plugin, {
-					ast,
-					moduleInfo: {
-						context: '/path/to/@dojo/i18n',
-						request: './cldr/load/webpack',
-						issuer: '/path/to/module/that/includes/cldr/load.ts'
-					}
-				});
-
-				const cldrData = fetchCldrData('en');
-				const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
-				assert.strictEqual(source.source().indexOf(injected), 0);
+			const plugin = new I18nPlugin({ defaultLocale: 'en' });
+			const source = testCldrInjection(plugin, {
+				ast: loadAst(),
+				moduleInfo: {
+					context: '/path/to/@dojo/i18n',
+					request: './cldr/load/webpack',
+					issuer: '/path/to/module/that/includes/cldr/load.ts'
+				}
 			});
+
+			const cldrData = fetchCldrData('en');
+			const injected = `var __cldrData__ = ${JSON.stringify(cldrData)}`;
+			assert.strictEqual(source.source().indexOf(injected), 0);
 		});
 
 		it('should ignore falsy modules passed to "before-resolve"', () => {
-			return loadAst().then((ast: Program) => {
-				const plugin = new I18nPlugin({ defaultLocale: 'en' });
-				const source = testCldrInjection(plugin, {
-					ast,
-					moduleInfo: null
-				});
-
-				const injected = `var __cldrData__ = {}`;
-				assert.strictEqual(source.source().indexOf(injected), 0);
+			const plugin = new I18nPlugin({ defaultLocale: 'en' });
+			const source = testCldrInjection(plugin, {
+				ast: loadAst(),
+				moduleInfo: null
 			});
+
+			const injected = `var __cldrData__ = {}`;
+			assert.strictEqual(source.source().indexOf(injected), 0);
 		});
 	});
 
 	describe('message bundles', () => {
+		let mockModule: MockModule;
+
+		beforeEach(() => {
+			mockModule = new MockModule('../../src/plugins/I18nPlugin');
+			mockModule.dependencies([
+				{
+					name: './InjectModulesPlugin',
+					mock: require('../../support/MockPlugin')
+				}
+			]);
+		});
+
+		afterEach(() => {
+			mockModule.destroy();
+		});
+
 		it('should not inject messages without supported locales', () => {
 			const compiler = new Compiler();
-			const plugin = new I18nPlugin({
+			const plugin = new (mockModule.getModuleUnderTest().default)({
 				defaultLocale: 'en',
 				messageBundles: [ 'src/nls/main', 'src/nls/other' ]
 			});
@@ -294,7 +287,7 @@ describe('i18n', () => {
 
 		it('should not inject messages without message bundle paths', () => {
 			const compiler = new Compiler();
-			const plugin = new I18nPlugin({
+			const plugin = new (mockModule.getModuleUnderTest().default)({
 				defaultLocale: 'en',
 				supportedLocales: [ 'es', 'fr', 'ar' ]
 			});
@@ -306,7 +299,7 @@ describe('i18n', () => {
 		it('should inject messages for all supported locales', () => {
 			const locales = [ 'es', 'fr', 'ar' ];
 			const compiler = new Compiler();
-			const plugin = new I18nPlugin({
+			const plugin = new (mockModule.getModuleUnderTest().default)({
 				defaultLocale: 'en',
 				supportedLocales: locales,
 				messageBundles: [ 'tests/support/mocks/nls/main' ]
@@ -325,7 +318,7 @@ describe('i18n', () => {
 
 		it('should ignore non-existent bundles', () => {
 			const compiler = new Compiler();
-			const plugin = new I18nPlugin({
+			const plugin = new (mockModule.getModuleUnderTest().default)({
 				defaultLocale: 'en',
 				supportedLocales: [ 'it' ],
 				messageBundles: [ 'tests/support/mocks/nls/main' ]
@@ -339,7 +332,7 @@ describe('i18n', () => {
 		it('should allow extensions in the message paths', () => {
 			const locales = [ 'es', 'fr', 'ar' ];
 			const compiler = new Compiler();
-			const plugin = new I18nPlugin({
+			const plugin = new (mockModule.getModuleUnderTest().default)({
 				defaultLocale: 'en',
 				supportedLocales: locales,
 				messageBundles: [ 'tests/support/mocks/nls/main.ts' ]

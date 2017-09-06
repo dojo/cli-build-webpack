@@ -1,5 +1,3 @@
-import { describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import * as path from 'path';
 import LoadPlugin from '../../../src/plugins/CoreLoadPlugin';
 import { hasExtension, resolveMid } from '../../../src/plugins/util/main';
@@ -9,6 +7,9 @@ import Compilation = require('../../support/webpack/Compilation');
 import CompilationParams = require('../../support/webpack/CompilationParams');
 import Compiler = require('../../support/webpack/Compiler');
 import NormalModule = require('../../support/webpack/NormalModule');
+
+const { assert } = intern.getPlugin('chai');
+const { describe, it } = intern.getInterface('bdd');
 
 const webpack = require('webpack');
 const WebpackOptionsDefaulter = require('webpack/lib/WebpackOptionsDefaulter');
@@ -28,7 +29,7 @@ function compile(entry: any, options: any, callback: any) {
 	const noOutputPath = !options.output || !options.output.path;
 	new WebpackOptionsDefaulter().process(options);
 	options.entry = entry;
-	options.context = path.join(__dirname, '../../../_build/tests/support');
+	options.context = path.join(__dirname, '../../../../_build/tests/support');
 
 	if (noOutputPath) {
 		options.output.path = '/';
@@ -322,7 +323,7 @@ describe('core-load', () => {
 						ignoredModules: [
 							'../../support/lazy-load/some-module'
 						],
-						basePath: path.join(__dirname, '../../../_build/tests/unit/plugins')
+						basePath: path.join(__dirname, '../../../../_build/tests/unit/plugins')
 					})
 				]
 			}, (files: any) => {

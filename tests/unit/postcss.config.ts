@@ -1,9 +1,10 @@
 import { readFileSync } from 'fs';
-import { afterEach, beforeEach, describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import { resolve } from 'path';
 import { createContext, runInContext } from 'vm';
 import MockModule from '../support/MockModule';
+
+const { assert } = intern.getPlugin('chai');
+const { describe, it, beforeEach, afterEach } = intern.getInterface('bdd');
 
 const basePath = process.cwd();
 const configPath = resolve(basePath, '_build/src/postcss.config.js');
@@ -26,7 +27,7 @@ function start() {
 		process: {
 			cwd: () => process.cwd()
 		},
-		require: (<any> require).nodeRequire,
+		require: (<any> require),
 		__dirname: dirname
 	});
 

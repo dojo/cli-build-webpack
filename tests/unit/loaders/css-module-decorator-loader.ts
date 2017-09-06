@@ -1,6 +1,7 @@
-import { describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import loader from '../../../src/loaders/css-module-decorator-loader/loader';
+
+const { assert } = intern.getPlugin('chai');
+const { describe, it } = intern.getInterface('bdd');
 
 describe('css-module-decorator-loader', () => {
 	it('should not effect content without local exports', () => {

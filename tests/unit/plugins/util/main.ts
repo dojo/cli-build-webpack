@@ -1,6 +1,7 @@
-import { describe, it } from 'intern!bdd';
-import * as assert from 'intern/chai!assert';
 import { getBasePath, hasExtension, isRelative, mergeUnique } from '../../../../src/plugins/util/main';
+
+const { assert } = intern.getPlugin('chai');
+const { describe, it } = intern.getInterface('bdd');
 
 describe('plugins/util/main', () => {
 	describe('getBasePath', () => {
