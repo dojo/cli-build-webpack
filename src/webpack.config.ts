@@ -1,11 +1,12 @@
 import webpack = require('webpack');
 import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
-import * as path from 'path';
-import { existsSync, readFileSync } from 'fs';
-import { BuildArgs } from './main';
 import Set from '@dojo/shim/Set';
 import StaticOptmizePlugin from '@dojo/static-optimize-plugin/StaticOptimizePlugin';
+import { existsSync, readFileSync } from 'fs';
+import * as path from 'path';
 import GetFeaturesType from './getFeatures';
+import { BuildArgs } from './main';
+
 const IgnorePlugin = require('webpack/lib/IgnorePlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -289,7 +290,13 @@ function webpackConfig(args: Partial<BuildArgs>) {
 							enforce: 'pre',
 							loader: 'tslint-loader',
 							options: {
-								tsConfigFile: path.join(basePath, 'tslint.json')
+								tsConfigFile: path.join(basePath, 'tslint.json'),
+								...includeWhen(!args.watch && !args.withTests, () => {
+									return {
+										emitErrors: true,
+										failOnHint: true
+									};
+								})
 							}
 						}
 					];

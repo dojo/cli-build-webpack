@@ -125,4 +125,36 @@ describe('webpack.config.ts', () => {
 			});
 		});
 	});
+
+	describe('tslint', () => {
+		function getTslintLoader() {
+			const tsLintLoaders = config.module.rules.filter((rule) => rule.loader === 'tslint-loader');
+
+			return tsLintLoaders[0];
+		}
+
+		it('will cause build errors on linting warnings if not watching or testing', () => {
+			start(true, {});
+			const loader = getTslintLoader();
+			assert.isDefined(loader);
+			assert.isTrue((<any> loader.options).emitErrors);
+			assert.isTrue((<any> loader.options).failOnHint);
+		});
+
+		it('will not cause build errors on linting warnings if watching', () => {
+			start(true, { watch: true });
+			const loader = getTslintLoader();
+			assert.isDefined(loader);
+			assert.isUndefined((<any> loader.options).emitErrors);
+			assert.isUndefined((<any> loader.options).failOnHint);
+		});
+
+		it('will not cause build errors on linting warnings if testing', () => {
+			start(true, { withTests: true });
+			const loader = getTslintLoader();
+			assert.isDefined(loader);
+			assert.isUndefined((<any> loader.options).emitErrors);
+			assert.isUndefined((<any> loader.options).failOnHint);
+		});
+	});
 });
