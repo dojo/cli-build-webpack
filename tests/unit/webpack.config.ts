@@ -5,6 +5,8 @@ import { Config } from 'webpack';
 import MockModule from '../support/MockModule';
 import { BuildArgs } from '../../src/main';
 
+const webpackConfig = require('../../src/webpack.config');
+
 const { assert } = intern.getPlugin('chai');
 const { afterEach, beforeEach, describe, it } = intern.getInterface('bdd');
 
@@ -58,6 +60,19 @@ function start(cli = true, args: Partial<BuildArgs> = {}) {
 	config = cli ? context.module.exports(args) : context.module.exports;
 }
 
+function getUMDCompatLoader(args = {}) {
+	const config: Config = webpackConfig(args);
+	return config.module.rules.reduce((value: any, rule: any) => {
+		const loaders = rule.use || [];
+		return loaders.reduce((result: any, loader: any) => {
+			if (loader.loader === 'umd-compat-loader') {
+				return loader;
+			}
+			return result;
+		}, null) || value;
+	}, null);
+}
+
 describe('webpack.config.ts', () => {
 	afterEach(() => {
 		mockModule && mockModule.destroy();
@@ -103,6 +118,30 @@ describe('webpack.config.ts', () => {
 		});
 
 		runAppTests();
+	});
+
+	describe('umd-compat-loader', () => {
+		it('can replace a require with promise-loader', () => {
+			const { options: { imports } } = getUMDCompatLoader({});
+			const result = imports('./TestModule', 'src/widgets');
+			assert.equal(
+				result,
+				'promise-loader?global,src/widgets/TestModule!./TestModule'
+			);
+		});
+
+		it('if bundle name passed, will include module in that bundle', () => {
+			const { options: { imports } } = getUMDCompatLoader({
+				bundles: {
+					'my-bundle': [ 'src/widgets/TestModule' ]
+				}
+			});
+			const result = imports('./TestModule', `src/widgets`);
+			assert.equal(
+				result,
+				'promise-loader?global,my-bundle!./TestModule'
+			);
+		});
 	});
 
 	describe('custom elements', () => {

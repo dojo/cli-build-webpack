@@ -43,6 +43,33 @@ function getJsonpFunction(name?: string) {
 	return jsonpFunction;
 }
 
+interface UMDCompatOptions {
+	bundles?: {
+		[key: string]: string[];
+	};
+}
+
+function getUMDCompatLoader(options: UMDCompatOptions) {
+	const { bundles = {} } = options;
+	return {
+		loader: 'umd-compat-loader',
+		options: {
+			imports(module: string, context: string) {
+				const filePath = path.relative(basePath, path.join(context, module));
+				let chunkName = filePath;
+				Object.keys(bundles).some((name) => {
+					if (bundles[name].indexOf(filePath) > -1) {
+						chunkName = name;
+						return true;
+					}
+					return false;
+				});
+				return `promise-loader?global,${chunkName}!${module}`;
+			}
+		}
+	};
+}
+
 function webpackConfig(args: Partial<BuildArgs>) {
 	args = args || {};
 
@@ -305,7 +332,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				{ test: /src[\\\/].*\.ts?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=ts&instanceName=0_dojo' },
 				{ test: /src[\\\/].*\.m\.css?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=css' },
 				{ test: /src[\\\/].*\.ts(x)?$/, use: [
-					'umd-compat-loader',
+					getUMDCompatLoader({ bundles: args.bundles }),
 					{
 						loader: 'ts-loader',
 						options: {
