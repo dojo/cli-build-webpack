@@ -2,7 +2,7 @@ import { Program } from 'estree';
 import { beforeEach } from 'intern/lib/interfaces/tdd';
 import { sep as separator } from 'path';
 import I18nPlugin from '../../../src/plugins/I18nPlugin';
-import { hasExtension } from '../../../src/plugins/util/main';
+import { hasExtension, resolveMid } from '../../../src/plugins/util/main';
 import MockModule from '../../support/MockModule';
 import MockPlugin from '../../support/MockPlugin';
 import { fetchCldrData } from '../../support/util';
@@ -113,8 +113,8 @@ describe('i18n', () => {
 
 		const replacementPlugin = compiler.applied[0];
 		assert.instanceOf(replacementPlugin, NormalModuleReplacementPlugin);
-		assert.strictEqual(replacementPlugin.resourceRegExp.toString(), '/\\/cldr\\/load$/');
-		assert.strictEqual(replacementPlugin.newResource, '@dojo/i18n/cldr/load/webpack');
+		assert.strictEqual(replacementPlugin.resourceRegExp.toString(), '/(\\\\|\\/)cldr(\\\\|\\/)load($|\\.js)/');
+		assert.strictEqual(replacementPlugin.newResource, resolveMid('@dojo/i18n/cldr/load/webpack'));
 	});
 
 	describe('CLDR data', () => {
@@ -309,7 +309,8 @@ describe('i18n', () => {
 			const messagePlugins = MockPlugin.instances();
 			const main = messagePlugins[0];
 
-			assert.strictEqual(main.options.resourcePattern.toString(), new RegExp('tests/support/mocks/nls/main').toString());
+			const expectedPattern = new RegExp([ 'tests', 'support', 'mocks', 'nls', 'main' ].join('(\\\\|\\/)'));
+			assert.strictEqual(main.options.resourcePattern.toString(), expectedPattern.toString());
 			assert.sameMembers(
 				main.options.moduleIds,
 				locales.map((locale: string) => `tests/support/mocks/nls/${locale}/main`.replace(/\//g, separator))
@@ -342,7 +343,8 @@ describe('i18n', () => {
 			const messagePlugins = MockPlugin.instances();
 			const main = messagePlugins[0];
 
-			assert.strictEqual(main.options.resourcePattern.toString(), new RegExp('tests/support/mocks/nls/main.ts').toString());
+			const expectedPattern = new RegExp([ 'tests', 'support', 'mocks', 'nls', 'main.ts' ].join('(\\\\|\\/)'));
+			assert.strictEqual(main.options.resourcePattern.toString(), expectedPattern.toString());
 			assert.sameMembers(
 				main.options.moduleIds,
 				locales.map((locale: string) => `tests/support/mocks/nls/${locale}/main.ts`.replace(/\//g, separator))

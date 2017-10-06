@@ -87,7 +87,7 @@ describe('core-load', () => {
 		plugin.apply(compiler);
 		const replacementPlugin = compiler.applied[0];
 		assert.instanceOf(replacementPlugin, NormalModuleReplacementPlugin);
-		assert.strictEqual(replacementPlugin.resourceRegExp.toString(), '/@dojo\\/core\\/load\\.js/');
+		assert.strictEqual(replacementPlugin.resourceRegExp.toString(), '/@dojo(\\\\|\\/)core(\\\\|\\/)load\\.js/');
 		assert.strictEqual(replacementPlugin.newResource, resolveMid('@dojo/core/load/webpack'));
 	});
 

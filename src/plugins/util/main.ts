@@ -1,3 +1,17 @@
+const { normalize, sep } = require('path');
+const currentDirectoryPattern = createFilePathRegExp('^\\.\/');
+
+/**
+ * Creates a regular expression from a string that can match a file path regardless of the path separator.
+ *
+ * @param pattern A regular expression string that matches a file path pattern.
+ *
+ * @return A regular expression that matches a file path pattern.
+ */
+export function createFilePathRegExp(pattern: string): RegExp {
+	return new RegExp(pattern.replace(/\//g, '(\\\\|\/)'));
+}
+
 /**
  * Strips the module name from the provided path.
  *
@@ -8,8 +22,9 @@
  * The base path.
  */
 export function getBasePath(context: string): string {
-	const base = context.split('/').slice(0, -1).join('/');
-	return base === '' ? '/' : base;
+	const prefix = currentDirectoryPattern.test(context) ? `.${sep}` : '';
+	const base = normalize(context).split(sep).slice(0, -1).join(sep);
+	return base === '' ? sep : prefix + base;
 }
 
 const extensionPattern = /\.[a-z0-9]+$/i;
@@ -21,7 +36,7 @@ const extensionPattern = /\.[a-z0-9]+$/i;
  * The file path to test.
  *
  * @return
- * `true` if the file path has an extension; false otherwise.
+ * `true` if the file path has an extension; `false` otherwise.
  */
 export function hasExtension(path: string): boolean {
 	return extensionPattern.test(path);
@@ -58,8 +73,8 @@ export function mergeUnique(left: string[], right: string[]): string[] {
  * `true` if the path is relative; `false` otherwise.
  */
 export function isRelative(id: string): boolean {
-	const first = id.charAt(0);
-	return first !== '/' && first !== '@' && /^\W/.test(id);
+	const first = normalize(id.charAt(0));
+	return first !== sep && first !== '@' && /^\W/.test(id);
 }
 
 /**

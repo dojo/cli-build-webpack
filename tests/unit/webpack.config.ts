@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, sep } from 'path';
 import { createContext, runInContext } from 'vm';
 import { Config } from 'webpack';
 import MockModule from '../support/MockModule';
@@ -126,7 +126,7 @@ describe('webpack.config.ts', () => {
 			const result = imports('./TestModule', 'src/widgets');
 			assert.equal(
 				result,
-				'promise-loader?global,src/widgets/TestModule!./TestModule'
+				`promise-loader?global,src${sep}widgets${sep}TestModule!./TestModule`
 			);
 		});
 

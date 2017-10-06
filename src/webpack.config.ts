@@ -58,7 +58,8 @@ function getUMDCompatLoader(options: UMDCompatOptions) {
 				const filePath = path.relative(basePath, path.join(context, module));
 				let chunkName = filePath;
 				Object.keys(bundles).some((name) => {
-					if (bundles[name].indexOf(filePath) > -1) {
+					const bundlePaths = bundles[name].map(bundlePath => path.normalize(bundlePath));
+					if (bundlePaths.indexOf(filePath) > -1) {
 						chunkName = name;
 						return true;
 					}

@@ -1,17 +1,27 @@
-import { getBasePath, hasExtension, isRelative, mergeUnique } from '../../../../src/plugins/util/main';
+import { sep } from 'path';
+import { createFilePathRegExp, getBasePath, hasExtension, isRelative, mergeUnique } from '../../../../src/plugins/util/main';
 
 const { assert } = intern.getPlugin('chai');
 const { describe, it } = intern.getInterface('bdd');
 
 describe('plugins/util/main', () => {
+	describe('createFilePathRegExp', () => {
+		it('should create a regular expression that can match either file separator', () => {
+			assert.instanceOf(createFilePathRegExp('/module'), RegExp);
+			assert.strictEqual(createFilePathRegExp('/module').toString(), '/(\\\\|\\/)module/');
+			assert.strictEqual(createFilePathRegExp('/module\\.ts').toString(), '/(\\\\|\\/)module\\.ts/');
+			assert.strictEqual(createFilePathRegExp('\\./parent/module\\.ts').toString(), '/\\.(\\\\|\\/)parent(\\\\|\\/)module\\.ts/');
+		});
+	});
+
 	describe('getBasePath', () => {
 		it('should strip the module name and return the parent path', () => {
-			assert.strictEqual(getBasePath('/module'), '/');
-			assert.strictEqual(getBasePath('/module.ts'), '/');
-			assert.strictEqual(getBasePath('./parent/module'), './parent');
-			assert.strictEqual(getBasePath('./parent/module.ts'), './parent');
-			assert.strictEqual(getBasePath('/parent/module'), '/parent');
-			assert.strictEqual(getBasePath('/parent/module.ts'), '/parent');
+			assert.strictEqual(getBasePath('/module'), sep);
+			assert.strictEqual(getBasePath('/module.ts'), sep);
+			assert.strictEqual(getBasePath('./parent/module'), `.${sep}parent`);
+			assert.strictEqual(getBasePath('./parent/module.ts'), `.${sep}parent`);
+			assert.strictEqual(getBasePath('/parent/module'), `${sep}parent`);
+			assert.strictEqual(getBasePath('/parent/module.ts'), `${sep}parent`);
 		});
 	});
 

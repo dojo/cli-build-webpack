@@ -1,5 +1,5 @@
 import { Require } from '@dojo/interfaces/loader';
-import * as path from 'path';
+import { resolve, sep } from 'path';
 import getCldrUrls, { getLoadCallUrls, getLoadImports } from '../../../../src/plugins/util/i18n';
 import { Program } from 'estree';
 
@@ -52,7 +52,7 @@ describe('plugins/util/i18n', () => {
 
 		it('should resolve relative urls', () => {
 			assert.sameMembers(getCldrUrls('/parent/context/mid.ts', loadAst(false)), [
-				path.resolve('/parent/path/to/cldr/data.json')
+				resolve('/parent/path/to/cldr/data.json'.replace(/\//g, sep))
 			]);
 		});
 	});

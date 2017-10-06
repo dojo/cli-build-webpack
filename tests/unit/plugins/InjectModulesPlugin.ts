@@ -95,7 +95,7 @@ describe('inject-modules', () => {
 				.then((result: any[]) => {
 					assert.sameDeepMembers(result, [ data ]);
 					assert.deepEqual(input, {
-						context: '/parent',
+						context: `${path.sep}parent`,
 						contextInfo: {},
 						request: './module'
 					}, 'The context is issuer.');
@@ -109,7 +109,7 @@ describe('inject-modules', () => {
 				.then((result: any[]) => {
 					assert.sameDeepMembers(result, [ data ]);
 					assert.deepEqual(input, {
-						context: '/parent',
+						context: `${path.sep}parent`,
 						contextInfo: {},
 						request: './module'
 					}, 'The context is issuer even when a context for the module is provided.');
@@ -379,7 +379,7 @@ describe('inject-modules', () => {
 				resolver({ resource: '/test/module.js' }, () => {
 					try {
 						assert.isTrue((<any> plugin.resolve).called, 'was called');
-						assert.isTrue((<any> plugin.createModules).calledWith([ { contextInfo: {}, context: '/test', request: './module' } ]), 'was called with the right parameters');
+						assert.isTrue((<any> plugin.createModules).calledWith([ { contextInfo: {}, context: `${path.sep}test`, request: './module' } ]), 'was called with the right parameters');
 						resolve();
 					}
 					catch (error) {

@@ -11,7 +11,9 @@ import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacem
 import Compiler = require('webpack/lib/Compiler');
 import InjectModulesPlugin from './InjectModulesPlugin';
 import getCldrUrls from './util/i18n';
-import { hasExtension, mergeUnique } from './util/main';
+import { createFilePathRegExp, hasExtension, mergeUnique, resolveMid } from './util/main';
+
+const cldrLoadWebpackPattern = createFilePathRegExp('cldr/load(/webpack|\\.js)');
 
 export interface DojoI18nPluginOptions {
 	/**
@@ -78,7 +80,7 @@ function getMessageLocalePaths(bundle: string, supportedLocales: string[]): stri
  * Determine whether the specified path is for the `@dojo/i18n/cldr/load` module.
  */
 function isCldrLoadModule(path: string): boolean {
-	return /cldr\/load\/webpack/.test(path);
+	return cldrLoadWebpackPattern.test(path);
 }
 
 /**
@@ -127,9 +129,10 @@ export default class DojoI18nPlugin {
 	 * The current compiler.
 	 */
 	apply(compiler: Compiler) {
-		const { defaultLocale, messageBundles, supportedLocales } = this;
+		const { messageBundles, supportedLocales } = this;
+		const cldrLoadPattern = createFilePathRegExp('/cldr/load($|\\.js)');
 
-		compiler.apply(new NormalModuleReplacementPlugin(/\/cldr\/load$/, '@dojo/i18n/cldr/load/webpack'));
+		compiler.apply(new NormalModuleReplacementPlugin(cldrLoadPattern, resolveMid('@dojo/i18n/cldr/load/webpack')));
 
 		if (supportedLocales && messageBundles && messageBundles.length) {
 			messageBundles.forEach(bundle => {
@@ -137,7 +140,7 @@ export default class DojoI18nPlugin {
 
 				if (localePaths.length) {
 					compiler.apply(new InjectModulesPlugin({
-						resourcePattern: new RegExp(bundle),
+						resourcePattern: createFilePathRegExp(bundle),
 						moduleIds: localePaths
 					}));
 				}

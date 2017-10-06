@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { getBasePath, resolveMid } from './util/main';
+import { createFilePathRegExp, getBasePath, resolveMid } from './util/main';
 import { CallExpression, Node, Program } from 'estree';
 import { getNextItem } from './util/parser';
 import Set from '@dojo/shim/Set';
@@ -25,6 +25,12 @@ const jsMidPattern = /\.(t|j)sx?$/;
 
 /**
  * @private
+ * Regular expression that matches a relative path, regardless of the file separator.
+ */
+const relativePathPattern = createFilePathRegExp('^\\.(\\.*)\/');
+
+/**
+ * @private
  * Test whether a module was required with a relative mid and is relative to a module with a contextual require.
  *
  * @param module
@@ -38,15 +44,26 @@ const jsMidPattern = /\.(t|j)sx?$/;
  */
 function isContextual(module: NormalModule, issuers: string[]): boolean {
 	const { rawRequest, userRequest } = module;
-	const relative = /^\.(\.*)\//;
 	const request = userRequest.replace(/\.[a-z0-9]+$/i, '');
-	return relative.test(rawRequest) && issuers.some((issuer: string) => path.resolve(issuer, rawRequest) === path.resolve(request));
+	return relativePathPattern.test(rawRequest) && issuers.some((issuer: string) => path.resolve(issuer, rawRequest) === path.resolve(request));
+}
+
+/**
+ * @private
+ * Strips the drive prefix from a file path and normalizes the path separator to '/'.
+ *
+ * @param path The path on which to operate.
+ *
+ * @return The normalized file path.
+ */
+function normalizeFilePath(path: string): string {
+	return path.replace(/\\/g, '/').replace(/^[a-z]:/i, '');
 }
 
 /**
  * @private
  * Remove the specified base path from the specified path. If the path begins with the base path, then also remove
- * the node_modules path segment.
+ * the node_modules path segment. Note that the file separator of the returned path is converted to '/'.
  *
  * @param basePath
  * The base path.
@@ -58,6 +75,8 @@ function isContextual(module: NormalModule, issuers: string[]): boolean {
  * The updated path.
  */
 function stripPath(basePath: string, path: string): string {
+	basePath = normalizeFilePath(basePath);
+	path = normalizeFilePath(path);
 	let resolved = (basePath ? path.replace(basePath + '/', '') : path).replace(/\..*$/, '');
 
 	if (path.indexOf(basePath) === 0) {
@@ -140,7 +159,7 @@ export default class DojoLoadPlugin {
 	constructor(options: DojoLoadPluginOptions = {}) {
 		const { basePath = './', chunkNames = {}, detectLazyLoads = false, ignoredModules, mapAppModules = false } = options;
 
-		this._basePath = basePath.replace(/\\/g, '/').replace(/^[cC]:/, '');
+		this._basePath = normalizeFilePath(basePath);
 		this._detectLazyLoads = detectLazyLoads;
 		this._lazyChunkNames = chunkNames;
 		this._mapAppModules = mapAppModules;
@@ -170,8 +189,9 @@ export default class DojoLoadPlugin {
 		const detectLazyLoads = this._detectLazyLoads;
 		const chunkNames = this._lazyChunkNames;
 		const ignoredModules = this._ignoredModules;
+		const coreLoadPattern = createFilePathRegExp('@dojo/core/load\\.js');
 
-		compiler.apply(new NormalModuleReplacementPlugin(/@dojo\/core\/load\.js/, resolveMid('@dojo/core/load/webpack')));
+		compiler.apply(new NormalModuleReplacementPlugin(coreLoadPattern, resolveMid('@dojo/core/load/webpack')));
 
 		compiler.plugin('compilation', (compilation, params) => {
 			params.normalModuleFactory.plugin('parser', function (parser) {
@@ -339,9 +359,12 @@ export default class DojoLoadPlugin {
 				}
 
 				modules.forEach(module => {
-					const { rawRequest, userRequest } = module;
+					let { rawRequest, userRequest } = module;
 
 					if (rawRequest) {
+						rawRequest = normalizeFilePath(rawRequest);
+						userRequest = normalizeFilePath(userRequest);
+
 						if (this._mapAppModules && path.resolve(userRequest).indexOf(path.resolve(appPath)) === 0) {
 							if (jsMidPattern.test(userRequest)) {
 								let modulePath = userRequest.replace(`${this._basePath}/`, '').replace(jsMidPattern, '');
