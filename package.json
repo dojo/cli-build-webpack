@@ -21,8 +21,8 @@
     "test": "grunt test"
   },
   "devDependencies": {
-    "@dojo/interfaces": "next",
-    "@dojo/loader": "next",
+    "@dojo/interfaces": "~0.1.0",
+    "@dojo/loader": "~0.1.0",
     "@types/chai": "^3.4.34",
     "@types/chalk": "^0.4.31",
     "@types/ejs": "^2.3.33",
@@ -48,11 +48,11 @@
     "yargs": "^5.0.0"
   },
   "dependencies": {
-    "@dojo/core": "next",
-    "@dojo/has": "next",
-    "@dojo/i18n": "next",
-    "@dojo/shim": "next",
-    "@dojo/static-optimize-plugin": "next",
+    "@dojo/core": "~0.1.0",
+    "@dojo/has": "~0.1.0",
+    "@dojo/i18n": "~0.1.0",
+    "@dojo/shim": "~0.1.0",
+    "@dojo/static-optimize-plugin": "~0.1.0",
     "auto-require-webpack-plugin": "1.0.1",
     "bundle-loader": "0.5.5",
     "copy-webpack-plugin": "4.0.1",
