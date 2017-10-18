@@ -13,7 +13,7 @@ const dirname = resolve(basePath, '_build/src');
 let mockModule: MockModule;
 
 function start() {
-	mockModule = new MockModule('../../src/postcss.config');
+	mockModule = new MockModule('../../src/postcss.config', require);
 	mockModule.dependencies([
 		'postcss-cssnext',
 		'postcss-import'

@@ -1,5 +1,6 @@
 import * as mockery from 'mockery';
 import * as sinon from 'sinon';
+import * as path from 'path';
 
 function load(modulePath: string): any {
 	return require(modulePath);
@@ -7,12 +8,6 @@ function load(modulePath: string): any {
 
 function resolvePath(basePath: string, modulePath: string): string {
 	return modulePath.replace('./', `${basePath}/`);
-}
-
-function getBasePath(modulePath: string): string {
-	const chunks = modulePath.split('/');
-	chunks.pop();
-	return chunks.join('/');
 }
 
 export type MockDependency = string | { name: string; mock: any };
@@ -23,9 +18,9 @@ export default class MockModule {
 	private mocks: any;
 	private sandbox: sinon.SinonSandbox;
 
-	constructor(moduleUnderTestPath: string) {
-		this.basePath = getBasePath(moduleUnderTestPath);
-		this.moduleUnderTestPath = moduleUnderTestPath;
+	constructor(moduleUnderTestPath: string, require: NodeRequire) {
+		this.moduleUnderTestPath = require.resolve(moduleUnderTestPath);
+		this.basePath = path.dirname(this.moduleUnderTestPath);
 		this.sandbox = sinon.sandbox.create();
 		this.mocks = {};
 	}

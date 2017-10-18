@@ -449,7 +449,7 @@ describe('inject-modules', () => {
 		let mockModule: MockModule;
 
 		beforeEach(() => {
-			mockModule = new MockModule('../../src/plugins/InjectModulesPlugin');
+			mockModule = new MockModule('../../../src/plugins/InjectModulesPlugin', require);
 			mockModule.dependencies([
 				{
 					name: 'webpack/lib/NormalModule',

@@ -5,27 +5,27 @@ import { Config } from 'webpack';
 import MockModule from '../support/MockModule';
 import { BuildArgs } from '../../src/main';
 
-const webpackConfig = require('../../src/webpack.config');
+const { createInstrumenter } = require('istanbul-lib-instrument');
 
 const { assert } = intern.getPlugin('chai');
 const { afterEach, beforeEach, describe, it } = intern.getInterface('bdd');
 
-const basePath = process.cwd();
-const configPath = resolve(basePath, '_build/src/webpack.config.js');
+const basePath = resolve(__dirname, '../..');
+const configPath = resolve(basePath, 'src/webpack.config.js');
 const configString = readFileSync(configPath);
-const dirname = resolve(basePath, '_build/src');
+const dirname = resolve(basePath, 'src');
 let mockModule: MockModule;
 let config: Config;
 
 function start(cli = true, args: Partial<BuildArgs> = {}) {
 	const mockPackageJson = {
-		name: resolve(basePath, 'package.json'),
+		name: resolve(basePath, '../package.json'),
 		mock: {
 			name: '@namespace/complex$-package-name'
 		}
 	};
 
-	mockModule = new MockModule('../../src/webpack.config');
+	mockModule = new MockModule('../../src/webpack.config', require);
 	mockModule.dependencies([
 		'./plugins/CoreLoadPlugin',
 		'./plugins/ExternalLoaderPlugin',
@@ -55,13 +55,32 @@ function start(cli = true, args: Partial<BuildArgs> = {}) {
 		__dirname: dirname
 	});
 
-	const js = configString.toString('utf8').replace(/\$\{packagePath\}/g, dirname.replace(/\\/g, '/').replace(/^[cC]:/, ''));
+	let js = configString.toString('utf8').replace(/\$\{packagePath\}/g, dirname.replace(/\\/g, '/').replace(/^[cC]:/, ''));
+
+	const shouldInstrument = intern.shouldInstrumentFile(resolve(basePath, 'src/webpack.config.js'));
+
+	if (shouldInstrument) {
+		const instrumenter = createInstrumenter({
+			esModules: true
+		});
+
+		js = instrumenter.instrumentSync(js, configPath, '');
+	}
+
 	runInContext(js, context);
 	config = cli ? context.module.exports(args) : context.module.exports;
+
+	if (shouldInstrument) {
+		intern.emit('coverage', {
+			coverage: (<any> context)['__coverage__'],
+			source: '',
+			sessionId: intern.config.sessionId
+		});
+	}
 }
 
 function getUMDCompatLoader(args = {}) {
-	const config: Config = webpackConfig(args);
+	start(true, args);
 	return config.module.rules.reduce((value: any, rule: any) => {
 		const loaders = rule.use || [];
 		return loaders.reduce((result: any, loader: any) => {
@@ -98,7 +117,7 @@ describe('webpack.config.ts', () => {
 				jsonpFunction: 'dojoWebpackJsonp_namespace_complex_package_name',
 				library: '[name]',
 				libraryTarget: 'umd',
-				path: resolve(basePath, './dist'),
+				path: resolve(basePath, '../dist'),
 				umdNamedDefine: true
 			});
 		});
@@ -160,7 +179,7 @@ describe('webpack.config.ts', () => {
 				filename: '[name].js',
 				jsonpFunction: 'dojoWebpackJsonp_namespace_complex_package_name',
 				libraryTarget: 'jsonp',
-				path: resolve(basePath, './dist/prefix')
+				path: resolve(basePath, '../dist/prefix')
 			});
 		});
 	});

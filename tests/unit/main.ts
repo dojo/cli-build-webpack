@@ -32,7 +32,7 @@ describe('main', () => {
 		process.env.DOJO_CLI = true;
 
 		sandbox = sinon.sandbox.create();
-		mockModule = new MockModule('../../src/main');
+		mockModule = new MockModule('../../src/main', require);
 		mockModule.dependencies(['./webpack.config', 'webpack', 'webpack-dev-server', 'net']);
 		mockWebpack = mockModule.getMock('webpack').ctor;
 		mockWebpackConfigModule = mockModule.getMock('./webpack.config').ctor;

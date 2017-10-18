@@ -261,7 +261,7 @@ describe('i18n', () => {
 		let mockModule: MockModule;
 
 		beforeEach(() => {
-			mockModule = new MockModule('../../src/plugins/I18nPlugin');
+			mockModule = new MockModule('../../../src/plugins/I18nPlugin', require);
 			mockModule.dependencies([
 				{
 					name: './InjectModulesPlugin',

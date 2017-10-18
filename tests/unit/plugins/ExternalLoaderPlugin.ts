@@ -11,7 +11,7 @@ let Plugin: typeof ExternalLoaderPlugin;
 describe('ExternalLoaderPlugin', () => {
 
 	beforeEach(() => {
-		mockModule = new MockModule('../../src/plugins/ExternalLoaderPlugin');
+		mockModule = new MockModule('../../../src/plugins/ExternalLoaderPlugin', require);
 		mockModule.dependencies([
 			'copy-webpack-plugin',
 			'html-webpack-include-assets-plugin'

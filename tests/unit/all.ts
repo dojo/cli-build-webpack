@@ -11,3 +11,4 @@ import './plugins/util/i18n';
 import './plugins/util/main';
 import './loaders/css-module-decorator-loader';
 import './loaders/css-module-dts-loader';
+import './loaders/istanbul-loader';
