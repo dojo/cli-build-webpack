@@ -3,8 +3,6 @@ import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacem
 import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import Set from '@dojo/shim/Set';
-import StaticOptmizePlugin from '@dojo/static-optimize-plugin/StaticOptimizePlugin';
-import GetFeaturesType from './getFeatures';
 import { BuildArgs } from './main';
 
 const IgnorePlugin = require('webpack/lib/IgnorePlugin');
@@ -21,7 +19,6 @@ const CoreLoadPlugin = require(`${packagePath}/plugins/CoreLoadPlugin`).default;
 const ExternalLoaderPlugin = require(`${packagePath}/plugins/ExternalLoaderPlugin`).default;
 const I18nPlugin = require(`${packagePath}/plugins/I18nPlugin`).default;
 const IgnoreUnmodifiedPlugin = require(`${packagePath}/plugins/IgnoreUnmodifiedPlugin`).default;
-const getFeatures: typeof GetFeaturesType = require(`${packagePath}/getFeatures`).default;
 const basePath = process.cwd();
 
 const packageJsonPath = path.join(basePath, 'package.json');
@@ -77,8 +74,6 @@ interface BuildConfigOptions {
 
 function webpackConfig(args: Partial<BuildArgs>) {
 	args = args || {};
-
-	const hasFlags = getFeatures(args);
 
 	const cssLoader = ExtractTextPlugin.extract({ use: 'css-loader?sourceMap' });
 	const localIdentName = (args.watch || args.withTests) ? '[name]__[local]__[hash:base64:5]' : '[hash:base64:8]';
@@ -234,8 +229,9 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				ignoredModules,
 				mapAppModules: args.withTests
 			}),
-			new StaticOptmizePlugin(hasFlags), ...includeWhen(args.element, () => {
-				return [new webpack.optimize.CommonsChunkPlugin({
+
+			...includeWhen(args.element, () => {
+				return [ new webpack.optimize.CommonsChunkPlugin({
 					name: 'widget-core',
 					filename: 'widget-core.js'
 				})];
@@ -361,6 +357,12 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				{ test: /src[\\\/].*\.ts?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=ts&instanceName=0_dojo' },
 				{ test: /src[\\\/].*\.m\.css?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=css' },
 				{ test: /src[\\\/].*\.ts(x)?$/, use: [
+					{
+						loader: '@dojo/webpack-contrib/static-build-loader',
+						options: {
+							features: args.features
+						}
+					},
 					getUMDCompatLoader({ bundles: args.bundles }),
 					{
 						loader: 'ts-loader',

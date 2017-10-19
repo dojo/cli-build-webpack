@@ -1,5 +1,4 @@
 import './main';
-import './getFeatures';
 import './webpack.config';
 import './postcss.config';
 import './plugins/CoreLoadPlugin';
