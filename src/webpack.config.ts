@@ -81,7 +81,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 	const includesExternals = Boolean(externalDependencies.length);
 	const cssModuleLoader = ExtractTextPlugin.extract({
 		use: [
-			'css-module-decorator-loader',
+			'@dojo/webpack-contrib/css-module-decorator-loader',
 			`css-loader?modules&sourceMap&importLoaders=1&localIdentName=${localIdentName}`,
 			{
 				loader: 'postcss-loader?sourceMap',
@@ -354,8 +354,8 @@ function webpackConfig(args: Partial<BuildArgs>) {
 					];
 				}),
 				{ test: /@dojo\/.*\.js$/, enforce: 'pre', loader: 'source-map-loader-cli', options: { includeModulePaths: true } },
-				{ test: /src[\\\/].*\.ts?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=ts&instanceName=0_dojo' },
-				{ test: /src[\\\/].*\.m\.css?$/, enforce: 'pre', loader: 'css-module-dts-loader?type=css' },
+				{ test: /src[\\\/].*\.ts?$/, enforce: 'pre', loader: '@dojo/webpack-contrib/css-module-dts-loader?type=ts&instanceName=0_dojo' },
+				{ test: /src[\\\/].*\.m\.css?$/, enforce: 'pre', loader: '@dojo/webpack-contrib/css-module-dts-loader?type=css' },
 				{ test: /src[\\\/].*\.ts(x)?$/, use: [
 					{
 						loader: '@dojo/webpack-contrib/static-build-loader',
