@@ -28,7 +28,7 @@ function start(cli = true, args: Partial<BuildArgs> = {}) {
 	mockModule = new MockModule('../../src/webpack.config', require);
 	mockModule.dependencies([
 		'./plugins/CoreLoadPlugin',
-		'./plugins/ExternalLoaderPlugin',
+		'@dojo/webpack-contrib/external-loader-plugin/ExternalLoaderPlugin',
 		'./plugins/I18nPlugin',
 		'copy-webpack-plugin',
 		'extract-text-webpack-plugin',
@@ -213,6 +213,30 @@ describe('webpack.config.ts', () => {
 			assert.isDefined(loader);
 			assert.isUndefined((<any> loader.options).emitErrors);
 			assert.isUndefined((<any> loader.options).failOnHint);
+		});
+	});
+
+	describe('external loader plugin', () => {
+		it('will pass external dependencies output path options to plugin', () => {
+			start(true, { externals: { dependencies: [ 'one' ], outputPath: 'foo' } });
+			const plugin = mockModule.getMock('@dojo/webpack-contrib/external-loader-plugin/ExternalLoaderPlugin').default;
+			assert.isTrue(plugin.calledOnce, 'Should have instantiated external loader plugin');
+			assert.deepEqual(plugin.firstCall.args, [ {
+				dependencies: [ 'one' ],
+				outputPath: 'foo',
+				pathPrefix: ''
+			} ]);
+		});
+
+		it('will point external loader plugin to _build dir if building tests', () => {
+			start(true, { externals: { dependencies: [ 'one' ], outputPath: 'foo' }, withTests: true });
+			const plugin = mockModule.getMock('@dojo/webpack-contrib/external-loader-plugin/ExternalLoaderPlugin').default;
+			assert.isTrue(plugin.calledOnce, 'Should have instantiated external loader plugin');
+			assert.deepEqual(plugin.firstCall.args, [ {
+				dependencies: [ 'one' ],
+				outputPath: 'foo',
+				pathPrefix: '../_build/src'
+			} ]);
 		});
 	});
 });

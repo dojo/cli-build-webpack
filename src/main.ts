@@ -1,9 +1,9 @@
 import { Command, EjectOutput, Helper, OptionsHelper } from '@dojo/interfaces/cli';
+import { ExternalDep } from '@dojo/webpack-contrib/external-loader-plugin/ExternalLoaderPlugin';
 import { underline } from 'chalk';
 import * as fs from 'fs';
 import * as net from 'net';
 import * as path from 'path';
-import { ExternalDep } from './plugins/ExternalLoaderPlugin';
 import webpack = require('webpack');
 
 const WebpackDevServer: any = require('webpack-dev-server');
