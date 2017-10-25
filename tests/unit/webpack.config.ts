@@ -29,6 +29,7 @@ function start(cli = true, args: Partial<BuildArgs> = {}) {
 	mockModule.dependencies([
 		'./plugins/CoreLoadPlugin',
 		'@dojo/webpack-contrib/external-loader-plugin/ExternalLoaderPlugin',
+		'@dojo/webpack-contrib/css-module-plugin/CssModulePlugin',
 		'./plugins/I18nPlugin',
 		'copy-webpack-plugin',
 		'extract-text-webpack-plugin',
@@ -238,5 +239,12 @@ describe('webpack.config.ts', () => {
 				pathPrefix: '../_build/src'
 			} ]);
 		});
+	});
+
+	it('should pass the basePath to the CssModulePlugin', () => {
+		start(true, {});
+		const plugin = mockModule.getMock('@dojo/webpack-contrib/css-module-plugin/CssModulePlugin').default;
+		assert.isTrue(plugin.calledOnce, 'Should have instantiated css module plugin');
+		assert.deepEqual(plugin.firstCall.args, [ process.cwd() ], 'Should have passed the base path');
 	});
 });

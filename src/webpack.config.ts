@@ -1,9 +1,8 @@
 import webpack = require('webpack');
-import NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
-import Set from '@dojo/shim/Set';
 import ExternalLoaderPlugin from '@dojo/webpack-contrib/external-loader-plugin/ExternalLoaderPlugin';
+import CssModulePlugin from '@dojo/webpack-contrib/css-module-plugin/CssModulePlugin';
 import { BuildArgs } from './main';
 
 const IgnorePlugin = require('webpack/lib/IgnorePlugin');
@@ -93,8 +92,6 @@ function webpackConfig(args: Partial<BuildArgs>) {
 			}
 		]
 	});
-
-	const replacedModules = new Set<string>();
 
 	function includeWhen(predicate: any, callback: IncludeCallback, elseCallback: IncludeCallback | null = null) {
 		return predicate ? callback(args as any) : (elseCallback ? elseCallback(args as any) : []);
@@ -186,18 +183,8 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				raw: true,
 				test: /tests\/unit\/all\.*/
 			}),
+			new CssModulePlugin(basePath),
 			new IgnorePlugin(/request\/providers\/node/),
-			new NormalModuleReplacementPlugin(/\.m.css$/, result => {
-				const requestFileName = path.resolve(result.context, result.request);
-				const jsFileName = requestFileName + '.js';
-
-				if (replacedModules.has(requestFileName)) {
-					replacedModules.delete(requestFileName);
-				} else if (existsSync(jsFileName)) {
-					replacedModules.add(requestFileName);
-					result.request = result.request.replace(/\.m\.css$/, '.m.css.js');
-				}
-			}),
 			new webpack.ContextReplacementPlugin(/dojo-app[\\\/]lib/, { test: () => false }),
 			...includeWhen(args.watch, () => {
 				return [ new IgnoreUnmodifiedPlugin() ];
@@ -381,7 +368,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				{ test: /.*\.(gif|png|jpe?g|svg|eot|ttf|woff|woff2)$/i, loader: 'file-loader?hash=sha512&digest=hex&name=[hash:base64:8].[ext]' },
 				{ test: /\.css$/, exclude: /src[\\\/].*/, loader: cssLoader },
 				{ test: /src[\\\/].*\.css?$/, loader: cssModuleLoader },
-				{ test: /\.m\.css.js$/, exclude: /src[\\\/].*/, use: ['json-css-module-loader'] },
+				{ test: /\.m\.css\.js$/, exclude: /src[\\\/].*/, use: ['json-css-module-loader'] },
 				...includeWhen(args.withTests, () => {
 					return [
 						{ test: /tests[\\\/].*\.ts?$/, use: [
