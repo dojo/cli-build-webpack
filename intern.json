@@ -3,11 +3,11 @@
     "./_build/tests/unit/all.js"
   ],
 
+  "coverage": [
+    "./_build/src/**/*.js"
+  ],
+
   "configs": {
-    "local": {
-      "coverage": [
-        "./_build/src/**/*.js"
-      ]
-    }
+    "local": {}
   }
 }
