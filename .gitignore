@@ -9,7 +9,5 @@
 /typings
 .baseDir.ts
 .tscache
-coverage-unmapped.json
 npm-debug.log
-/coverage
 coverage-final.lcov
