@@ -11,6 +11,8 @@
 		"sourceMap": true,
 		"target": "es6",
 		"moduleResolution": "node",
+		"importHelpers": true,
+		"downlevelIteration": true,
 		"typeRoots": [
 			"./node_modules/@types",
 			"./node_modules/intern/types"

@@ -157,6 +157,8 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				}, () => {
 					return {
 						'src/main': [
+							'@dojo/shim/main',
+							'@dojo/shim/browser',
 							path.join(basePath, 'src/main.css'),
 							path.join(basePath, 'src/main.ts')
 						]
