@@ -173,7 +173,7 @@ async function watch(config: webpack.Config, options: WebpackOptions, args: Buil
 	const server = new WebpackDevServer(compiler, options);
 
 	return new Promise<void>((resolve, reject) => {
-		server.listen(serverPort, '127.0.0.1', (err: Error) => {
+		server.listen(serverPort, (err: Error) => {
 			console.log(`Starting server on http://localhost:${serverPort}`);
 			if (err) {
 				reject(err);
