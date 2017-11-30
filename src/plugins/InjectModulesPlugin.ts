@@ -180,7 +180,7 @@ export default class InjectModulesPlugin {
 			compilation.plugin('optimize-chunks', (chunks) => {
 				this._modules.forEach((module: NormalModule) => {
 					chunks.forEach((chunk) => {
-						const requests = chunk.modules.map((module: NormalModule) => module.userRequest);
+						const requests = chunk.modules.map((module) => (module as NormalModule).userRequest);
 
 						if (requests.some((id: string) => resources.indexOf(id) > -1)) {
 							chunk.addModule(module);

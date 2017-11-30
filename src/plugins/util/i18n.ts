@@ -1,5 +1,5 @@
 import Map from '@dojo/shim/Map';
-import { CallExpression, Expression, Identifier, Program, SequenceExpression, SpreadElement, VariableDeclaration, VariableDeclarator } from 'estree';
+import { CallExpression, Expression, Identifier, Program, SequenceExpression, SpreadElement, VariableDeclarator } from 'estree';
 import * as path from 'path';
 import { getBasePath, isRelative, mergeUnique } from './main';
 import { extractArrayValues, getNextItem, isShadowing } from './parser';
@@ -192,8 +192,8 @@ export const getLoadCallUrls = (function () {
  */
 export function getLoadImports(ast: Program): string[] {
 	return ast.body.filter(item => item.type === 'VariableDeclaration')
-		.reduce((a: VariableDeclarator[], b: VariableDeclaration) => {
-			return a.concat(b.declarations);
+		.reduce((a: VariableDeclarator[], b) => {
+			return a.concat((b as any).declarations);
 		}, [])
 		.filter(((item: VariableDeclarator) => {
 			const expression = item.init as CallExpression;

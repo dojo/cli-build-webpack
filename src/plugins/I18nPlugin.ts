@@ -247,8 +247,8 @@ export default class DojoI18nPlugin {
 				});
 			});
 
-			compilation.moduleTemplate.plugin('module', (source, module: NormalModule) => {
-				if (isCldrLoadModule(module.userRequest)) {
+			compilation.moduleTemplate.plugin('module', (source, module) => {
+				if (isCldrLoadModule((module as NormalModule).userRequest)) {
 					const locales = this._getLocales();
 					let cldrUrls = containsLoad.map((path: string) => getCldrUrls(path, astMap.get(path) as Program))
 						.reduce(mergeUnique, [])

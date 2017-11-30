@@ -1,11 +1,7 @@
 import Tapable = require('tapable');
 
-export interface Callback {
-	(...args: any[]): any;
-}
-
 export interface Plugins {
-	[name: string]: Callback[];
+	[name: string]: Function[];
 }
 
 export default class Pluginable extends Tapable {
@@ -17,7 +13,7 @@ export default class Pluginable extends Tapable {
 		const callbacks = this._plugins[name];
 
 		if (callbacks) {
-			return callbacks.map((callback: Callback) => callback.apply(this, args));
+			return callbacks.map((callback: Function) => callback.apply(this, args));
 		}
 
 		return [];

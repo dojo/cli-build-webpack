@@ -330,9 +330,9 @@ export default class DojoLoadPlugin {
 				}
 			});
 
-			compilation.moduleTemplate.plugin('module', (source, module: NormalModule) => {
+			compilation.moduleTemplate.plugin('module', (source, module) => {
 				if (module.meta && module.meta.isPotentialLoad) {
-					const path = stripPath(basePath, module.userRequest);
+					const path = stripPath(basePath, (module as NormalModule).userRequest);
 					const require = `var require = function () { return '${path}'; };`;
 					return new ConcatSource(require, '\n', source);
 				}
@@ -345,7 +345,7 @@ export default class DojoLoadPlugin {
 				return source;
 			});
 
-			compilation.plugin('optimize-module-ids', (modules: NormalModule[]) => {
+			compilation.plugin('optimize-module-ids', (modules) => {
 				const appPath = this._basePath ? path.join(this._basePath, 'src') : 'src';
 				function mapModuleId(modulePath: string, module: NormalModule) {
 					const { rawRequest, userRequest } = module;
@@ -359,7 +359,7 @@ export default class DojoLoadPlugin {
 				}
 
 				modules.forEach(module => {
-					let { rawRequest, userRequest } = module;
+					let { rawRequest, userRequest } = module as NormalModule;
 
 					if (rawRequest) {
 						rawRequest = normalizeFilePath(rawRequest);
@@ -368,14 +368,14 @@ export default class DojoLoadPlugin {
 						if (this._mapAppModules && path.resolve(userRequest).indexOf(path.resolve(appPath)) === 0) {
 							if (jsMidPattern.test(userRequest)) {
 								let modulePath = userRequest.replace(`${this._basePath}/`, '').replace(jsMidPattern, '');
-								mapModuleId(modulePath, module);
+								mapModuleId(modulePath, module as NormalModule);
 							}
 						}
 						else if (rawRequest.indexOf('@dojo') === 0 || !/^\W/.test(rawRequest)) {
 							let modulePath = rawRequest;
-							mapModuleId(modulePath, module);
+							mapModuleId(modulePath, module as NormalModule);
 						}
-						else if (isContextual(module, issuers)) {
+						else if (isContextual(module as NormalModule, issuers)) {
 							const modulePath = stripPath(basePath, userRequest);
 							idMap[modulePath] = { id: module.id, lazy: false };
 						}

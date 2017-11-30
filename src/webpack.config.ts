@@ -401,7 +401,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				...includeWhen(args.bundles && Object.keys(args.bundles).length, () => {
 					const loaders: any[] = [];
 
-					Object.keys(args.bundles).forEach(bundleName => {
+					Object.keys(args.bundles || {}).forEach(bundleName => {
 						(args.bundles || {})[ bundleName ].forEach(fileName => {
 							loaders.push({
 								test: /main\.ts/,
