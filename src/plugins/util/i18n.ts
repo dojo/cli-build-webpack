@@ -1,8 +1,45 @@
 import Map from '@dojo/shim/Map';
-import { CallExpression, Identifier, Program, VariableDeclaration, VariableDeclarator } from 'estree';
+import { CallExpression, Expression, Identifier, Program, SequenceExpression, SpreadElement, VariableDeclaration, VariableDeclarator } from 'estree';
 import * as path from 'path';
 import { getBasePath, isRelative, mergeUnique } from './main';
 import { extractArrayValues, getNextItem, isShadowing } from './parser';
+
+/**
+ * @private
+ * Determines whether the provided expression is a CallExpression.
+ */
+function isCallExpression(expression: any): expression is CallExpression {
+	return expression && expression.type === 'CallExpression';
+}
+
+/**
+ * @private
+ * Determines whether the provided expression is a SequenceExpression.
+ */
+function isSequenceExpression(expression: any): expression is SequenceExpression {
+	return expression && expression.type === 'SequenceExpression';
+}
+
+/**
+ * @private
+ * Resolves the callee and arguments for the provided expression.
+ *
+ * @param expression An AST expression node.
+ * @return An object containing the callee and arguments if the expression is a call expression.
+ */
+function getCallExpressionData(expression?: any): { callee?: Identifier, args?: Array<Expression | SpreadElement> } {
+	if (isSequenceExpression(expression)) {
+		const callExpressions = expression.expressions.filter(expression => isCallExpression(expression)) as CallExpression[];
+		expression = callExpressions[0];
+	}
+
+	if (!expression) {
+		return {};
+	}
+
+	const { callee, arguments: args } = expression;
+	return { callee, args };
+}
 
 /**
  * Return an array of URLs that are passed as arguments to `@dojo/i18n/cldr/load.default` in the specified AST program
@@ -160,9 +197,7 @@ export function getLoadImports(ast: Program): string[] {
 		}, [])
 		.filter(((item: VariableDeclarator) => {
 			const expression = item.init as CallExpression;
-			const callee = expression && expression.callee as Identifier;
-			const args = expression && expression.arguments;
-
+			const { callee, args } = getCallExpressionData(expression);
 			return callee && callee.name === 'require' && args && args.length === 1 && /cldr\/load/.test((<any> args[0]).value);
 		}))
 		.map(item => (<Identifier> item.id).name);

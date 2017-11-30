@@ -1,0 +1,356 @@
+{
+  "type": "Program",
+  "start": 0,
+  "end": 121,
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 0
+    }
+  },
+  "range": [
+    0,
+    121
+  ],
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "start": 0,
+      "end": 57,
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 57
+        }
+      },
+      "range": [
+        0,
+        57
+      ],
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "start": 6,
+          "end": 56,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 6
+            },
+            "end": {
+              "line": 1,
+              "column": 56
+            }
+          },
+          "range": [
+            6,
+            56
+          ],
+          "id": {
+            "type": "Identifier",
+            "start": 6,
+            "end": 10,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 6
+              },
+              "end": {
+                "line": 1,
+                "column": 10
+              }
+            },
+            "range": [
+              6,
+              10
+            ],
+            "name": "load"
+          },
+          "init": {
+            "type": "SequenceExpression",
+            "start": 14,
+            "end": 55,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 14
+              },
+              "end": {
+                "line": 1,
+                "column": 55
+              }
+            },
+            "range": [
+              14,
+              55
+            ],
+            "expressions": [
+              {
+                "type": "ArrowFunctionExpression",
+                "start": 14,
+                "end": 22,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 14
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 22
+                  }
+                },
+                "range": [
+                  14,
+                  22
+                ],
+                "id": null,
+                "generator": false,
+                "expression": false,
+                "async": false,
+                "params": [
+
+                ],
+                "body": {
+                  "type": "BlockStatement",
+                  "start": 20,
+                  "end": 22,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 20
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 22
+                    }
+                  },
+                  "range": [
+                    20,
+                    22
+                  ],
+                  "body": [
+
+                  ]
+                }
+              },
+              {
+                "type": "CallExpression",
+                "start": 24,
+                "end": 55,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 24
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 55
+                  }
+                },
+                "range": [
+                  24,
+                  55
+                ],
+                "callee": {
+                  "type": "Identifier",
+                  "start": 24,
+                  "end": 31,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 24
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 31
+                    }
+                  },
+                  "range": [
+                    24,
+                    31
+                  ],
+                  "name": "require"
+                },
+                "arguments": [
+                  {
+                    "type": "Literal",
+                    "start": 32,
+                    "end": 54,
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 32
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 54
+                      }
+                    },
+                    "range": [
+                      32,
+                      54
+                    ],
+                    "value": "@dojo\/i18n\/cldr\/load",
+                    "raw": "'@dojo\/i18n\/cldr\/load'"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "const"
+    },
+    {
+      "type": "ExpressionStatement",
+      "start": 58,
+      "end": 120,
+      "loc": {
+        "start": {
+          "line": 2,
+          "column": 0
+        },
+        "end": {
+          "line": 2,
+          "column": 62
+        }
+      },
+      "range": [
+        58,
+        120
+      ],
+      "expression": {
+        "type": "CallExpression",
+        "start": 58,
+        "end": 119,
+        "loc": {
+          "start": {
+            "line": 2,
+            "column": 0
+          },
+          "end": {
+            "line": 2,
+            "column": 61
+          }
+        },
+        "range": [
+          58,
+          119
+        ],
+        "callee": {
+          "type": "MemberExpression",
+          "start": 58,
+          "end": 70,
+          "loc": {
+            "start": {
+              "line": 2,
+              "column": 0
+            },
+            "end": {
+              "line": 2,
+              "column": 12
+            }
+          },
+          "range": [
+            58,
+            70
+          ],
+          "object": {
+            "type": "Identifier",
+            "start": 58,
+            "end": 62,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 0
+              },
+              "end": {
+                "line": 2,
+                "column": 4
+              }
+            },
+            "range": [
+              58,
+              62
+            ],
+            "name": "load"
+          },
+          "property": {
+            "type": "Identifier",
+            "start": 63,
+            "end": 70,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 5
+              },
+              "end": {
+                "line": 2,
+                "column": 12
+              }
+            },
+            "range": [
+              63,
+              70
+            ],
+            "name": "default"
+          },
+          "computed": false
+        },
+        "arguments": [
+          {
+            "type": "ArrayExpression",
+            "start": 71,
+            "end": 118,
+            "loc": {
+              "start": {
+                "line": 2,
+                "column": 13
+              },
+              "end": {
+                "line": 2,
+                "column": 60
+              }
+            },
+            "range": [
+              71,
+              118
+            ],
+            "elements": [
+              {
+                "type": "Literal",
+                "start": 73,
+                "end": 116,
+                "loc": {
+                  "start": {
+                    "line": 2,
+                    "column": 15
+                  },
+                  "end": {
+                    "line": 2,
+                    "column": 58
+                  }
+                },
+                "range": [
+                  73,
+                  116
+                ],
+                "value": "cldr-data\/supplemental\/likelySubtags.json",
+                "raw": "'cldr-data\/supplemental\/likelySubtags.json'"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "sourceType": "module"
+}

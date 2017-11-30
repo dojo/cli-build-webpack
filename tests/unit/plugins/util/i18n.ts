@@ -8,8 +8,13 @@ const { describe, it } = intern.getInterface('bdd');
 
 declare const require: Require;
 
-function loadAst(complete = true) {
-	const file = complete ? 'complete' : 'relative';
+const enum Asts {
+	Complete = 'complete',
+	Relative = 'relative',
+	Sequence = 'sequence'
+}
+
+function loadAst(file: Asts = Asts.Complete) {
 	return require(`../../../support/mocks/ast/cldr-${file}.json`) as Program;
 }
 
@@ -17,6 +22,29 @@ describe('plugins/util/i18n', () => {
 	describe('getLoadImports', () => {
 		it('should return an array of variable names for `cldr/load` imports', () => {
 			assert.sameMembers(getLoadImports(loadAst()), [ 'load' ]);
+		});
+
+		it('should parse sequence expressions', () => {
+			assert.sameMembers(getLoadImports(loadAst(Asts.Sequence)), [ 'load' ]);
+		});
+
+		it('should return an empty object when a sequence expression contains no call expressions', () => {
+			const ast = {
+				body: [
+					{
+						type: 'VariableDeclaration',
+						declarations: [
+							{
+								init: {
+									type: 'SequenceExpression',
+									expressions: []
+								}
+							}
+						]
+					}
+				]
+			};
+			assert.lengthOf(getLoadImports(ast as any), 0);
 		});
 	});
 
@@ -51,7 +79,7 @@ describe('plugins/util/i18n', () => {
 		});
 
 		it('should resolve relative urls', () => {
-			assert.sameMembers(getCldrUrls('/parent/context/mid.ts', loadAst(false)), [
+			assert.sameMembers(getCldrUrls('/parent/context/mid.ts', loadAst(Asts.Relative)), [
 				resolve('/parent/path/to/cldr/data.json'.replace(/\//g, sep))
 			]);
 		});

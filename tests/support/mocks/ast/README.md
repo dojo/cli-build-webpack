@@ -115,3 +115,10 @@ Promise.resolve().then(() => {
 const load = require('@dojo/i18n/cldr/load');
 load.default([ '../path/to/cldr/data.json' ]);
 ```
+
+`cldr-sequence.json` is the AST object output for the following JavaScript:
+
+```javascript
+const load = (() => {}, require('@dojo/i18n/cldr/load'));
+load.default([ 'cldr-data/supplemental/likelySubtags.json' ]);
+```
