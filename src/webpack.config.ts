@@ -356,7 +356,8 @@ function webpackConfig(args: Partial<BuildArgs>) {
 					{
 						loader: 'ts-loader',
 						options: {
-							instance: 'dojo'
+							instance: 'dojo',
+							onlyCompileBundledFiles: true
 						}
 					}
 				]},
@@ -378,25 +379,27 @@ function webpackConfig(args: Partial<BuildArgs>) {
 							{
 								loader: 'ts-loader',
 								options: {
-									instance: 'dojo'}
+									instance: 'dojo',
+									onlyCompileBundledFiles: true
 								}
-							] },
-							{
-								test: /src\/.*\.ts$/,
-								use: {
-									loader: 'istanbul-loader'
-								},
-								enforce: 'post'
 							}
-						];
-					}),
-					...includeWhen(args.element, args => {
-						return [
-							{ test: /custom-element\.js/, loader: `imports-loader?widgetFactory=${args.element}` }
-						];
-					}),
-					...includeWhen(args.bundles && Object.keys(args.bundles).length, () => {
-						const loaders: any[] = [];
+						] },
+						{
+							test: /src\/.*\.ts$/,
+							use: {
+								loader: 'istanbul-loader'
+							},
+							enforce: 'post'
+						}
+					];
+				}),
+				...includeWhen(args.element, args => {
+					return [
+						{ test: /custom-element\.js/, loader: `imports-loader?widgetFactory=${args.element}` }
+					];
+				}),
+				...includeWhen(args.bundles && Object.keys(args.bundles).length, () => {
+					const loaders: any[] = [];
 
 					Object.keys(args.bundles).forEach(bundleName => {
 						(args.bundles || {})[ bundleName ].forEach(fileName => {
