@@ -361,7 +361,15 @@ function webpackConfig(args: Partial<BuildArgs>) {
 						}
 					}
 				]},
-				{ test: /\.js?$/, loader: 'umd-compat-loader' },
+				{ test: /\.js?$/, use: [
+					{
+						loader: '@dojo/webpack-contrib/static-build-loader',
+						options: {
+							features: args.features
+						}
+					},
+					'umd-compat-loader'
+				]},
 				{ test: new RegExp(`globalize(\\${path.sep}|$)`), loader: 'imports-loader?define=>false' },
 				...includeWhen(!args.element, () => {
 					return [
