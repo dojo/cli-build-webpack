@@ -1,3 +1,20 @@
+declare module 'clean-webpack-plugin' {
+	class CleanWebpackPlugin {
+		constructor(directories: string[], options?: CleanWebpackPlugin.Options);
+	}
+
+	namespace CleanWebpackPlugin {
+		interface Options {
+			root?: string;
+			exclude?: string[];
+			verbose?: boolean;
+			dry?: boolean;
+		}
+	}
+
+	export = CleanWebpackPlugin;
+}
+
 declare module 'tapable' {
 	class Tapable {
 		protected _plugins: { [key: string]: Function[] };

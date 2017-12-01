@@ -31,6 +31,7 @@ function start(cli = true, args: Partial<BuildArgs> = {}) {
 		'@dojo/webpack-contrib/external-loader-plugin/ExternalLoaderPlugin',
 		'@dojo/webpack-contrib/css-module-plugin/CssModulePlugin',
 		'./plugins/I18nPlugin',
+		'clean-webpack-plugin',
 		'copy-webpack-plugin',
 		'extract-text-webpack-plugin',
 		'html-webpack-plugin',
@@ -105,6 +106,13 @@ describe('webpack.config.ts', () => {
 
 			const webpack = mockModule.getMock('webpack');
 			assert.isTrue(webpack.BannerPlugin.calledWith(expected));
+		});
+
+		it('should remove previous build artifacts', () => {
+			const cleanPlugin = mockModule.getMock('clean-webpack-plugin');
+			assert.isTrue(cleanPlugin.ctor.calledWith([ '_build', 'dist' ], {
+				root: process.cwd()
+			}));
 		});
 	}
 

@@ -6,6 +6,7 @@ import CssModulePlugin from '@dojo/webpack-contrib/css-module-plugin/CssModulePl
 import { BuildArgs } from './main';
 
 const IgnorePlugin = require('webpack/lib/IgnorePlugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -173,6 +174,7 @@ function webpackConfig(args: Partial<BuildArgs>) {
 			fs: 'empty'
 		},
 		plugins: [
+			new CleanWebpackPlugin([ '_build', 'dist' ], { root: basePath }),
 			new AutoRequireWebpackPlugin(/src\/main/),
 			new webpack.BannerPlugin(readFileSync(require.resolve(`${packagePath}/banner.md`), 'utf8')),
 			/**

@@ -36,6 +36,7 @@
     "@types/source-map": "^0.5.0",
     "@types/yargs": "^8.0.2",
     "cldr-data": "^30.0.1",
+    "clean-webpack-plugin": "^0.1.17",
     "codecov.io": "0.1.6",
     "glob": "^7.0.3",
     "grunt": "~1.0.1",
