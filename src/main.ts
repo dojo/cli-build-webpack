@@ -52,7 +52,7 @@ interface WebpackOptions {
 }
 
 function getConfigArgs(args: BuildArgs): Partial<BuildArgs> {
-	const { messageBundles, supportedLocales, watch } = args;
+	const { messageBundles, supportedLocales } = args;
 	const options: Partial<BuildArgs> = Object.keys(args).reduce((options: Partial<BuildArgs>, key: string) => {
 		if (key !== 'messageBundles' && key !== 'supportedLocales') {
 			options[key] = args[key];
@@ -69,15 +69,24 @@ function getConfigArgs(args: BuildArgs): Partial<BuildArgs> {
 	}
 
 	if (args.element && !args.elementPrefix) {
-		const factoryPattern = /create(.*?)Element.*?\.ts$/;
-		const matches = args.element.match(factoryPattern);
+		const elementFileName = args.element.replace(/\.ts$/, '');
+		const factoryPattern = /create(.*?)Element.*?$/;
+		const matchesFactoryPattern = elementFileName.match(factoryPattern);
 
-		if (matches && matches[ 1 ]) {
-			options.elementPrefix = matches[ 1 ].replace(/[A-Z][a-z]/g, '-\$&').replace(/^-+/g, '').toLowerCase();
+		if (matchesFactoryPattern && matchesFactoryPattern[1]) {
+			options.elementPrefix = matchesFactoryPattern[1].replace(/[A-Z][a-z]/g, '-\$&').replace(/^-+/g, '').toLowerCase();
 		}
 		else {
-			console.error(`"${args.element}" does not follow the pattern "createXYZElement". Use --elementPrefix to name element.`);
-			process.exit();
+			const filePattern = /([^\^/]*)$/;
+			const matches = elementFileName.match(filePattern);
+
+			if (matches && matches[1]) {
+				options.elementPrefix = matches[1].replace(/[A-Z][a-z]/g, '-\$&').replace(/^-+/g, '').toLowerCase();
+			}
+			else {
+				console.error(`Element prefix could not be determined from element name: "${args.element}". Use --elementPrefix to name element.`);
+				process.exit();
+			}
 		}
 	}
 

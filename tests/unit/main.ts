@@ -414,7 +414,29 @@ describe('main', () => {
 			});
 		});
 
-		it('should set the element prefix if it matches the pattern', () => {
+		it('should set the element prefix based on the filename', () => {
+			return moduleUnderTest.run(getMockConfiguration(), {
+				'element': '/path/to/TestWidget.ts'
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
+					element: '/path/to/TestWidget.ts',
+					elementPrefix: 'test-widget'
+				}), JSON.stringify(mockWebpackConfigModule.args));
+			});
+		});
+
+		it('should handle a filename without an extension', () => {
+			return moduleUnderTest.run(getMockConfiguration(), {
+				'element': '/path/to/TestWidget'
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
+					element: '/path/to/TestWidget',
+					elementPrefix: 'test-widget'
+				}), JSON.stringify(mockWebpackConfigModule.args));
+			});
+		});
+
+		it('should support createXElement filename format', () => {
 			return moduleUnderTest.run(getMockConfiguration(), {
 				'element': '/path/to/createTestElement.ts'
 			}).then(() => {
@@ -425,14 +447,37 @@ describe('main', () => {
 			});
 		});
 
-		it('should error if the element prefix does not match the pattern', () => {
+		it('should support createXElement filename format without an extension', () => {
+			return moduleUnderTest.run(getMockConfiguration(), {
+				'element': '/path/to/createTestElement'
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
+					element: '/path/to/createTestElement',
+					elementPrefix: 'test'
+				}), JSON.stringify(mockWebpackConfigModule.args));
+			});
+		});
+
+		it('should allow the prefix to be specified', () => {
+			return moduleUnderTest.run(getMockConfiguration(), {
+				'element': '/path/to/TestWidget.ts',
+				'elementPrefix': 'my-widget'
+			}).then(() => {
+				assert.isTrue(mockWebpackConfigModule.calledWith({
+					element: '/path/to/TestWidget.ts',
+					elementPrefix: 'my-widget'
+				}), JSON.stringify(mockWebpackConfigModule.args));
+			});
+		});
+
+		it('should error if the element prefix cannot be determined', () => {
 			const exitMock = sandbox.stub(process, 'exit');
 
 			return moduleUnderTest.run(getMockConfiguration(), {
-				'element': '/path/to/myelement.ts'
+				'element': '/path/to/'
 			}).then(() => {
 				assert.isTrue(exitMock.called);
-				assert.isTrue((<sinon.SinonStub> console.error).calledWith('"/path/to/myelement.ts" does not follow the pattern "createXYZElement". Use --elementPrefix to name element.'));
+				assert.isTrue((<sinon.SinonStub> console.error).calledWith('Element prefix could not be determined from element name: "/path/to/". Use --elementPrefix to name element.'));
 
 				exitMock.restore();
 			});

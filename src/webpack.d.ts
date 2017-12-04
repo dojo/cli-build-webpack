@@ -49,6 +49,16 @@ declare module 'webpack-sources/lib/ConcatSource' {
 	export = ConcatSource;
 }
 
+declare module 'webpack/lib/DefinePlugin' {
+	import webpack = require('webpack');
+
+	class DefinePlugin implements webpack.Plugin {
+		constructor(definitions: { [key: string]: string; });
+		apply(compiler: webpack.Compiler): void;
+	}
+	export = DefinePlugin;
+}
+
 declare module 'webpack-sources/lib/Source' {
 	import * as crypto from 'crypto';
 
