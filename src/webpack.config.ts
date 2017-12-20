@@ -3,6 +3,7 @@ import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import ExternalLoaderPlugin from '@dojo/webpack-contrib/external-loader-plugin/ExternalLoaderPlugin';
 import CssModulePlugin from '@dojo/webpack-contrib/css-module-plugin/CssModulePlugin';
+import I18nPlugin from '@dojo/webpack-contrib/i18n-plugin/I18nPlugin';
 import { BuildArgs } from './main';
 
 const IgnorePlugin = require('webpack/lib/IgnorePlugin');
@@ -17,8 +18,6 @@ const DefinePlugin = require('webpack/lib/DefinePlugin');
 
 const isCLI = process.env.DOJO_CLI;
 const packagePath = isCLI ? '.' : '@dojo/cli-build-webpack';
-const CoreLoadPlugin = require(`${packagePath}/plugins/CoreLoadPlugin`).default;
-const I18nPlugin = require(`${packagePath}/plugins/I18nPlugin`).default;
 const IgnoreUnmodifiedPlugin = require(`${packagePath}/plugins/IgnoreUnmodifiedPlugin`).default;
 const basePath = process.cwd();
 
@@ -67,10 +66,6 @@ function getUMDCompatLoader(options: UMDCompatOptions) {
 			}
 		}
 	};
-}
-
-interface BuildConfigOptions {
-	target?: 'web' | 'node';
 }
 
 function webpackConfig(args: Partial<BuildArgs>) {
@@ -218,13 +213,6 @@ function webpackConfig(args: Partial<BuildArgs>) {
 					{ context: 'src', from: '**/*', ignore: '*.ts' }
 				]);
 			}),
-			new CoreLoadPlugin({
-				basePath,
-				detectLazyLoads: !args.disableLazyWidgetDetection,
-				ignoredModules,
-				mapAppModules: args.withTests
-			}),
-
 			...includeWhen(args.element, () => {
 				return [ new webpack.optimize.CommonsChunkPlugin({
 					name: 'widget-core',
@@ -252,13 +240,13 @@ function webpackConfig(args: Partial<BuildArgs>) {
 				});
 			}),
 			...includeWhen(args.locale, args => {
-				const { locale, messageBundles, supportedLocales, watch } = args;
+				const { cldrPaths, element, locale, supportedLocales = [] } = args;
 				return [
 					new I18nPlugin({
-						cacheCldrUrls: watch,
+						cldrPaths,
 						defaultLocale: locale,
-						supportedLocales,
-						messageBundles
+						supportedLocales: Array.isArray(supportedLocales) ? supportedLocales : [ supportedLocales ],
+						target: element || path.join(basePath, 'src/main.ts')
 					})
 				];
 			}),

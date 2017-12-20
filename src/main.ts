@@ -24,19 +24,19 @@ export interface Bundles {
 
 export interface BuildArgs {
 	[index: string]: any;
-	messageBundles: string | string[];
-	supportedLocales: string | string[];
-	watch: boolean;
-	port: string;
-	element: string;
-	elementPrefix: string;
-	withTests: boolean;
+	bundles: Bundles;
+	cldrPaths: string[];
 	debug: boolean;
 	disableLazyWidgetDetection: boolean;
-	bundles: Bundles;
+	element: string;
+	elementPrefix: string;
 	externals: { outputPath?: string; dependencies: ExternalDep[] };
 	features: string | string[];
 	force: boolean;
+	port: string;
+	supportedLocales: string | string[];
+	watch: boolean;
+	withTests: boolean;
 }
 
 interface ConfigFactory {
@@ -52,21 +52,7 @@ interface WebpackOptions {
 }
 
 function getConfigArgs(args: BuildArgs): Partial<BuildArgs> {
-	const { messageBundles, supportedLocales } = args;
-	const options: Partial<BuildArgs> = Object.keys(args).reduce((options: Partial<BuildArgs>, key: string) => {
-		if (key !== 'messageBundles' && key !== 'supportedLocales') {
-			options[key] = args[key];
-		}
-		return options;
-	}, Object.create(null));
-
-	if (messageBundles) {
-		options.messageBundles = Array.isArray(messageBundles) ? messageBundles : [ messageBundles ];
-	}
-
-	if (supportedLocales) {
-		options.supportedLocales = Array.isArray(supportedLocales) ? supportedLocales : [ supportedLocales ];
-	}
+	const options: Partial<BuildArgs> = { ...args };
 
 	if (args.element && !args.elementPrefix) {
 		const elementFileName = args.element.replace(/\.ts$/, '');
@@ -258,6 +244,11 @@ const command: Command<BuildArgs> = {
 			describe: 'build tests as well as sources'
 		});
 
+		options('cldrPaths', {
+			describe: 'Paths for any CLDR data to include in the build',
+			type: 'array'
+		});
+
 		options('locale', {
 			describe: 'The default locale for the application',
 			type: 'string'
@@ -265,11 +256,6 @@ const command: Command<BuildArgs> = {
 
 		options('supportedLocales', {
 			describe: 'Any additional locales supported by the application',
-			type: 'array'
-		});
-
-		options('messageBundles', {
-			describe: 'Any message bundles to include in the build',
 			type: 'array'
 		});
 

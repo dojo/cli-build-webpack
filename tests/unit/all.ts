@@ -1,10 +1,5 @@
 import './main';
 import './webpack.config';
 import './postcss.config';
-import './plugins/CoreLoadPlugin';
-import './plugins/I18nPlugin';
 import './plugins/IgnoreUnmodifiedPlugin';
-import './plugins/InjectModulesPlugin';
-import './plugins/util/i18n';
-import './plugins/util/main';
 import './loaders/istanbul-loader';

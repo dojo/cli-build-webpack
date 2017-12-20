@@ -27,10 +27,9 @@ function start(cli = true, args: Partial<BuildArgs> = {}) {
 
 	mockModule = new MockModule('../../src/webpack.config', require);
 	mockModule.dependencies([
-		'./plugins/CoreLoadPlugin',
 		'@dojo/webpack-contrib/external-loader-plugin/ExternalLoaderPlugin',
 		'@dojo/webpack-contrib/css-module-plugin/CssModulePlugin',
-		'./plugins/I18nPlugin',
+		'@dojo/webpack-contrib/i18n-plugin/I18nPlugin',
 		'clean-webpack-plugin',
 		'copy-webpack-plugin',
 		'extract-text-webpack-plugin',

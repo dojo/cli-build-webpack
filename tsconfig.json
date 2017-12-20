@@ -5,6 +5,7 @@
 		"module": "commonjs",
 		"outDir": "_build/",
 		"removeComments": false,
+		"noUnusedLocals": true,
 		"sourceMap": true,
 		"strict": true,
 		"target": "es6",

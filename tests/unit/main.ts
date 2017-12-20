@@ -115,9 +115,9 @@ describe('main', () => {
 		assureArgument('w');
 		assureArgument('p');
 		assureArgument('t');
+		assureArgument('cldrPaths');
 		assureArgument('locale');
 		assureArgument('supportedLocales');
-		assureArgument('messageBundles');
 		assureArgument('element');
 		assureArgument('elementPrefix');
 		assureArgument('debug');
@@ -277,28 +277,14 @@ describe('main', () => {
 
 		it('should correctly set i18n options', () => {
 			return moduleUnderTest.run(getMockConfiguration(), {
+				cldrPaths: [ 'cldr-data/supplemental/likelySubtags.json' ],
 				locale: 'en',
-				supportedLocales: [ 'fr' ],
-				messageBundles: [ 'nls/main' ]
+				supportedLocales: [ 'fr' ]
 			}).then(() => {
 				assert.isTrue(mockWebpackConfigModule.calledWith({
+					cldrPaths: [ 'cldr-data/supplemental/likelySubtags.json' ],
 					locale: 'en',
-					supportedLocales: [ 'fr' ],
-					messageBundles: [ 'nls/main' ]
-				}), JSON.stringify(mockWebpack.args));
-			});
-		});
-
-		it('should allow string values for supported locales and message bundles', () => {
-			return moduleUnderTest.run(getMockConfiguration(), {
-				locale: 'en',
-				supportedLocales: 'fr',
-				messageBundles: 'nls/main'
-			}).then(() => {
-				assert.isTrue(mockWebpackConfigModule.calledWith({
-					locale: 'en',
-					supportedLocales: [ 'fr' ],
-					messageBundles: [ 'nls/main' ]
+					supportedLocales: [ 'fr' ]
 				}), JSON.stringify(mockWebpack.args));
 			});
 		});
@@ -306,16 +292,16 @@ describe('main', () => {
 		it('should load options from .dojorc', () => {
 			const config = getMockConfiguration({
 				'build-webpack': {
+					cldrPaths: [ 'cldr-data/supplemental/likelySubtags.json' ],
 					locale: 'en',
-					supportedLocales: 'fr',
-					messageBundles: 'nls/main'
+					supportedLocales: [ 'fr' ]
 				}
 			});
 			return moduleUnderTest.run(config, {}).then(() => {
 				assert.isTrue(mockWebpackConfigModule.calledWith({
+					cldrPaths: [ 'cldr-data/supplemental/likelySubtags.json' ],
 					locale: 'en',
-					supportedLocales: [ 'fr' ],
-					messageBundles: [ 'nls/main' ]
+					supportedLocales: [ 'fr' ]
 				}), JSON.stringify(mockWebpack.args));
 			});
 		});
@@ -328,13 +314,11 @@ describe('main', () => {
 			});
 			return moduleUnderTest.run(config, {
 				locale: 'en',
-				supportedLocales: [ 'fr', 'es' ],
-				messageBundles: 'nls/main'
+				supportedLocales: [ 'fr', 'es' ]
 			}).then(() => {
 				assert.isTrue(mockWebpackConfigModule.calledWith({
 					locale: 'en',
-					supportedLocales: [ 'fr', 'es' ],
-					messageBundles: [ 'nls/main' ]
+					supportedLocales: [ 'fr', 'es' ]
 				}), JSON.stringify(mockWebpack.args));
 			});
 		});
@@ -342,20 +326,20 @@ describe('main', () => {
 		it('should not override .dojorc with undefined values', () => {
 			const config = getMockConfiguration({
 				'build-webpack': {
+					cldrPaths: [ 'cldr-data/supplemental/likelySubtags.json' ],
 					locale: 'en',
-					supportedLocales: [ 'fr', 'es' ],
-					messageBundles: 'nls/main'
+					supportedLocales: [ 'fr', 'es' ]
 				}
 			});
 			return moduleUnderTest.run(config, {
+				cldrPaths: undefined,
 				locale: undefined,
-				supportedLocales: undefined,
-				messageBundles: undefined
+				supportedLocales: undefined
 			}).then(() => {
 				assert.isTrue(mockWebpackConfigModule.calledWith({
+					cldrPaths: [ 'cldr-data/supplemental/likelySubtags.json' ],
 					locale: 'en',
-					supportedLocales: [ 'fr', 'es' ],
-					messageBundles: [ 'nls/main' ]
+					supportedLocales: [ 'fr', 'es' ]
 				}), JSON.stringify(mockWebpack.args));
 			});
 		});
