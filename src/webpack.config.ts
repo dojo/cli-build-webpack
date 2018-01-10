@@ -325,7 +325,8 @@ function webpackConfig(args: Partial<BuildArgs>) {
 								enforce: 'pre',
 								loader: 'tslint-loader',
 								options: {
-									tsConfigFile: path.join(basePath, 'tslint.json'),
+									tsConfigFile: path.join(basePath, 'tsconfig.json'),
+									configFile: path.join(basePath, 'tslint.json'),
 								...includeWhen(!args.watch && !args.withTests, () => {
 									return {
 										emitErrors: true,
