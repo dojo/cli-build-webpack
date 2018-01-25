@@ -1,15 +1,20 @@
 var registerCustomElement = require('@dojo/widget-core/registerCustomElement').default;
 
-var isFactory;
-try {
-	const descriptor = widgetFactory.default();
-	if (descriptor && typeof descriptor.tagName === 'string') {
-		isFactory = true;
+var defaultExport = widgetFactory.default;
+var descriptor;
+
+if (defaultExport) {
+	if (defaultExport.prototype && defaultExport.prototype.__customElementDescriptor) {
+		descriptor = function() { return defaultExport.prototype.__customElementDescriptor };
+	}
+	else {
+		try {
+			if (typeof defaultExport().tagName === 'string') {
+				descriptor = defaultExport;
+			}
+		} catch(error) {}
 	}
 }
-catch (e) {
-}
 
-if (isFactory) {
-	registerCustomElement(widgetFactory.default);
-}
+descriptor && registerCustomElement(descriptor);
+

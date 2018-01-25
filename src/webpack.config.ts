@@ -14,7 +14,6 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const AutoRequireWebpackPlugin = require('auto-require-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer-sunburst').BundleAnalyzerPlugin;
-const DefinePlugin = require('webpack/lib/DefinePlugin');
 
 const isCLI = process.env.DOJO_CLI;
 const packagePath = isCLI ? '.' : '@dojo/cli-build-webpack';
@@ -189,9 +188,6 @@ function webpackConfig(args: Partial<BuildArgs>) {
 			...includeWhen(args.watch, () => {
 				return [ new IgnoreUnmodifiedPlugin() ];
 			}),
-			...includeWhen(args.element, () => [ new DefinePlugin({
-				__dojoCustomElements__: true
-			}) ]),
 			includeWhen(args.element, args => {
 				return new ExtractTextPlugin({ filename: `${args.elementPrefix}.css` });
 			}, () => {
