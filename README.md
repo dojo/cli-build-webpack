@@ -7,7 +7,7 @@
 
 The official dojo 2 build command.
 
-*WARNING* This is _beta_ software. While we do not anticipate significant changes to the API at this stage, we may feel the need to do so. This is not yet production ready, so you should use at your own risk.
+*WARNING* This package is deprecated in favor of functionality found elsewhere in Dojo 2 ([@dojo/cli-build-app](https://github.com/dojo/cli-build-app) and [@dojo/cli-build-widget](https://github.com/dojo/cli-build-widget)). This package is not being further developed at this time as its feature set is redundant with other capabilities.
 
 - [Usage](#usage)
 - [Features](#features)
