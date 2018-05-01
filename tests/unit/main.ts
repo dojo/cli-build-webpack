@@ -29,7 +29,7 @@ describe('main', () => {
 	}
 
 	beforeEach(() => {
-		process.env.DOJO_CLI = true;
+		process.env.DOJO_CLI = 'true';
 
 		sandbox = sinon.sandbox.create();
 		mockModule = new MockModule('../../src/main', require);
